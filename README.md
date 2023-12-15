@@ -1,5 +1,5 @@
-# Introdução a Pesquisa Operacional
-## Passo a passo para inicializar o leitor de instâncias
+# Introdução - Pesquisa Operacional
+### Inicializar o leitor de instâncias
 1. Arquivo .Data do diretório .obj estava dando conflito, por isso precisei fazer a exclusão;
 
 1. Limpando todos os arquivos e objetos de dependência;
