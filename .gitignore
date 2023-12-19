@@ -1,2 +1,5 @@
 test/
 .vscode/
+*.o
+*.d
+tsp

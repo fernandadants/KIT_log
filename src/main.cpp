@@ -1,50 +1,67 @@
 #include "Data.h"
+#include <iostream>
 #include <vector>
 #include <random>
-#include <iostream>
 #include <time.h>
 #include <algorithm>
 
 using namespace std;
 
-// estrutura para criar uma solução do TSP
+// estrutura para criar uma solução TSP
 struct Solution
 {
     vector<int> sequencia;
     double valorObj;
 };
 
-// estrutura necessária para realizar a inserção de novos vértices na solução
+// estrutura auxiliar para inserção de novos vértices
 struct InsertionInfo
 {
-    int noInserido;     // novo vértice 'k' que será inserido
-    int arestaRemovida; // aresta {i, j} que será removida após a inserção do novo 'k'
-    double custo;       // delta (ou custo) ao inserir o vértice 'k' na aresta (i, j)
+    int noInserido; // vértice k que será inserido
+    int arestaRemovida; // aresta {i, j} que será removida aṕos a inserção do novo k
+    double custo; // custo ao inserir o vértice 'k' na aresta (i, j)
+
+    // estrutura necessária para fazer a comparação de custo
+    inline bool operator<(const InsertionInfo &right){
+        return custo < right.custo;
+    }
 };
 
-// iterando sobre os vértices da solução e mostrar resultados
-void showSolution(Solution &s)
-{
-    for (int i = 0; i < s.sequencia.size() - 1; i++)
+// iterando sobre os vértices da solução e mostrar os resultados obtidos
+void showSolution(Solution &s){
+    for(int i=0; i < s.sequencia.size() -1; i++)
     {
-        cout << s.sequencia[i] << "-> ";
+        cout << s.sequencia[i] << " ";
         cout << s.sequencia.back() << endl;
     }
 }
 
-// calcula o cusco da inserção de um novo vértice 'k' na solução
-vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &d)
-{
-    vector<InsertionInfo> custoInsercao((s.sequencia.size() - 1) * CL.size());
+vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &d){
+    
+    // o tamanho do vetor de custoInsercao será do tamanho de sequencia * o tamanho da lista de candidados
+    const int tam = (s.sequencia.size() - 1) * CL.size();
+    cout << "Tam " << tam << endl;
+
+    if (tam <= 0){
+        return vector<InsertionInfo>();
+    }
+    cout << "Aqui nada ainda";
+
+    vector<InsertionInfo> custoInsercao(tam);
+    cout << "Aqui nada ainda";
 
     int l = 0;
-    for (int a = 0; a < s.sequencia.size() - 1; a++)
+
+    // iterando na solução
+    for (int a = 0; a < s.sequencia.size()-1; a++)
     {
         int i = s.sequencia[a];
-        int j = s.sequencia[a + 1];
-        for (auto k : CL)
-        {
-            custoInsercao[l].custo = d.getDistance(i, k) + d.getDistance(j, k) - d.getDistance(i, j);
+        int j = s.sequencia[a+1];
+
+        // inserindo todos os vertices da lista de candidados e calculando custo
+        for (auto k: CL){
+
+            custoInsercao[l].custo = d.getDistance(i, k) + d.getDistance(k, j) - d.getDistance(i, j);
             custoInsercao[l].noInserido = k;
             custoInsercao[l].arestaRemovida = a;
             l++;
@@ -53,114 +70,87 @@ vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &
     return custoInsercao;
 }
 
-void ordenarPorCusto(vector<InsertionInfo>& info) {
-    int tam = info.size();
-
-    for (int i = 0; i < tam - 1; ++i) {
-
-        // encontra o índice do menor custo
-        int indiceMenor = i;
-
-        // fazendo iteracao dos proximos numeros
-        for (int j = i + 1; j < tam; j++) {
-            
-            // se o custo do proximo numero for menor que o atual
-            if (info[j].custo < info[indiceMenor].custo) {
-                indiceMenor = j;
-            }
-        }
-
-        // troca o elemento atual com o menor encontrado
-        InsertionInfo temp = info[indiceMenor];
-        info[indiceMenor] = info[i];
-        info[i] = temp;
-    }
-}
-
 // faz a construção de uma solução razoável para o problema através do método de inserção mais barata
 Solution Construcao(Data &data)
 {
-    // inicializando arestas da solução
-    int tam = data.getDimension();
+    int tam = data.getDimension() - 1;
 
-    // escrevendo lista de candidatos
+    // escrevendo lista de candidatos e começando com tam-1 devido a solução já começar com o 1.
     vector<int> CL(tam);
 
-    // inicializando valores com a lista de candidatos
-    for (int i = 0; i < CL.size(); i++)
+    //inicializando valores da lista de candidatos e começando a partir do 2
+    for (int i = 0, k = 2; i < tam; i++, k++)
     {
-        CL[i] = i + 1;
+        CL[i] = k;
     }
 
     // iniciando processo de formação da solução
     Solution s;
-
-    // começando a partir do vertice 1 e finalizando nele mesmo
+    
+    // começando solução a partir do 1 e finalizando nele mesmo; definindo valor obj como 0
     s.sequencia = {1, 1};
+    s.valorObj = 0;
 
-    // escolhendo três nós aleatorios para serem inseridos na solução
+    // escolhendo 3 nós aleatórios para serem inseridos na solução
     for (int i = 0; i < 3; i++)
     {
-        // gerar o indice do nó que será selecionado (entre a posição 1 e tam);
-        unsigned int indice_no_aleatorio = rand() % tam + 1;
+        // gerar indice do nó que será selecionado
+        unsigned int indice_no_aleatorio = rand() % (tam-1);
         unsigned int no_aleatorio = CL[indice_no_aleatorio];
 
         // inserindo nó na solução
-        s.sequencia.insert(s.sequencia.begin() + i + 1, no_aleatorio);
+        s.sequencia.insert((s.sequencia.begin() + i + 1), no_aleatorio);
 
-        // excluindo nó da lista de candidatos
-        CL.erase(CL.begin() + indice_no_aleatorio);
+        // excluindo nó da lista de candidados
+        CL.erase(s.sequencia.begin() + indice_no_aleatorio);
     }
 
-    // enquanto a lista de candidatos não estiver vazia
-    while (!CL.empty())
+    while(!CL.empty())
     {
-
         // criando vetor que irá calcular o custo de inserção do novo nó
         vector<InsertionInfo> custoInsercao = calcularCustoInsercao(s, CL, data);
-
+        cout << "Aqui nada ainda";
         // ordenando em ordem crescente
-        ordenarPorCusto(custoInsercao);
+        sort(custoInsercao.begin(), custoInsercao.end());
+        
 
-        // escolhendo um numero aleatório entre os disponíveis no vetor
-        double alpha = rand() % tam;
+        // escolhendo um numero aleatório
+        double alpha = rand() % 1 + 0.000001;
+        int indice_alpha = ceil(alpha * custoInsercao.size());
 
-        // selecionando um vértice aleatório entre o inicio do vetor até o numero alpha
-        int selecionado = rand() % ((int)ceil(alpha * custoInsercao.size()));
-
-        //
+        // selecionando um vertice aleatorio no vetor, do inicio até o numero alpha 
+        unsigned int selecionado = rand() % indice_alpha;
         int no_selecionado = custoInsercao[selecionado].noInserido;
         int aresta = custoInsercao[selecionado].arestaRemovida;
+
+        cout << s.sequencia.size() << " Aresta " << aresta + 1 << endl;
+
         s.sequencia.insert(s.sequencia.begin() + aresta + 1, no_selecionado);
 
+        // buscando indice do nó que foi selecionado
         auto indice_selecionado = find(CL.begin(), CL.end(), no_selecionado);
-        CL.erase(CL.begin() + indice_selecionado[0]);
+
+        cout << CL.size() << " " << " encontrado " << *indice_selecionado << endl;
+        CL.erase(indice_selecionado);
     }
 
     return s;
+    
 }
 
 int main(int argc, char **argv)
 {
-
+    
     auto data = Data(argc, argv[1]);
     data.read();
+    cout << "Chegou aqui" << endl;
     unsigned int n = data.getDimension();
-
-    cout << "Exemplo de Solucao s = ";
-    double cost = 0.0;
-    for (unsigned int i = 1; i < n; i++)
-    {
-        // cout << i << " -> ";
-        cost += data.getDistance(i, i + 1);
-    }
-    cost += data.getDistance(n, 1);
-    // cout << n << " -> " << 1 << endl;
-    cout << "Custo de S: " << cost << endl;
 
     srand(time(NULL));
 
-    Solution construct = Construcao(data);
+    Solution s_construct = Construcao(data);
+
+    showSolution(s_construct);
     
     return 0;
 }
