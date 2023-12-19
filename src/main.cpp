@@ -40,18 +40,10 @@ vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &
     
     // o tamanho do vetor de custoInsercao será do tamanho de sequencia * o tamanho da lista de candidados
     const int tam = (s.sequencia.size() - 1) * CL.size();
-    cout << "Tam " << tam << endl;
-
-    if (tam <= 0){
-        return vector<InsertionInfo>();
-    }
-    cout << "Aqui nada ainda";
 
     vector<InsertionInfo> custoInsercao(tam);
-    cout << "Aqui nada ainda";
 
     int l = 0;
-
     // iterando na solução
     for (int a = 0; a < s.sequencia.size()-1; a++)
     {
@@ -109,14 +101,13 @@ Solution Construcao(Data &data)
     {
         // criando vetor que irá calcular o custo de inserção do novo nó
         vector<InsertionInfo> custoInsercao = calcularCustoInsercao(s, CL, data);
-        cout << "Aqui nada ainda";
+
         // ordenando em ordem crescente
         sort(custoInsercao.begin(), custoInsercao.end());
-        
 
         // escolhendo um numero aleatório
         double alpha = rand() % 1 + 0.000001;
-        int indice_alpha = ceil(alpha * custoInsercao.size());
+        int indice_alpha = ceil(alpha * (custoInsercao.size()-1));
 
         // selecionando um vertice aleatorio no vetor, do inicio até o numero alpha 
         unsigned int selecionado = rand() % indice_alpha;
@@ -143,14 +134,13 @@ int main(int argc, char **argv)
     
     auto data = Data(argc, argv[1]);
     data.read();
-    cout << "Chegou aqui" << endl;
     unsigned int n = data.getDimension();
 
     srand(time(NULL));
 
     Solution s_construct = Construcao(data);
 
-    showSolution(s_construct);
+    //showSolution(s_construct);
     
     return 0;
 }
