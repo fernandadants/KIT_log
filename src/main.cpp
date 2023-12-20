@@ -29,11 +29,12 @@ struct InsertionInfo
 
 // iterando sobre os vértices da solução e mostrar os resultados obtidos
 void showSolution(Solution &s){
-    for(int i=0; i < s.sequencia.size() -1; i++)
+    for(int i=0; i < s.sequencia.size(); i++)
     {
         cout << s.sequencia[i] << " ";
-        cout << s.sequencia.back() << endl;
+        //cout << s.sequencia.back() << endl;
     }
+    cout << endl;
 }
 
 vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &d){
@@ -80,22 +81,26 @@ Solution Construcao(Data &data)
     Solution s;
     
     // começando solução a partir do 1 e finalizando nele mesmo; definindo valor obj como 0
-    s.sequencia = {1, 1};
+    s.sequencia = {1};
     s.valorObj = 0;
 
     // escolhendo 3 nós aleatórios para serem inseridos na solução
     for (int i = 0; i < 3; i++)
     {
-        // gerar indice do nó que será selecionado
-        unsigned int indice_no_aleatorio = rand() % (tam-1);
+        // gerar indice do nó que será selecionado  
+        unsigned int indice_no_aleatorio = rand() % (tam);
         unsigned int no_aleatorio = CL[indice_no_aleatorio];
 
         // inserindo nó na solução
-        s.sequencia.insert((s.sequencia.begin() + i + 1), no_aleatorio);
+        s.sequencia.push_back(no_aleatorio);
 
         // excluindo nó da lista de candidados
-        CL.erase(s.sequencia.begin() + indice_no_aleatorio);
+        CL.erase(CL.begin() + indice_no_aleatorio);
     }
+
+    s.sequencia.push_back(1);
+
+    showSolution(s);
 
     while(!CL.empty())
     {
@@ -107,21 +112,18 @@ Solution Construcao(Data &data)
 
         // escolhendo um numero aleatório
         double alpha = rand() % 1 + 0.000001;
-        int indice_alpha = ceil(alpha * (custoInsercao.size()-1));
+        int indice_alpha = ceil(alpha * (custoInsercao.size()));
 
         // selecionando um vertice aleatorio no vetor, do inicio até o numero alpha 
         unsigned int selecionado = rand() % indice_alpha;
         int no_selecionado = custoInsercao[selecionado].noInserido;
         int aresta = custoInsercao[selecionado].arestaRemovida;
 
-        cout << s.sequencia.size() << " Aresta " << aresta + 1 << endl;
-
         s.sequencia.insert(s.sequencia.begin() + aresta + 1, no_selecionado);
 
         // buscando indice do nó que foi selecionado
         auto indice_selecionado = find(CL.begin(), CL.end(), no_selecionado);
 
-        cout << CL.size() << " " << " encontrado " << *indice_selecionado << endl;
         CL.erase(indice_selecionado);
     }
 
@@ -140,7 +142,7 @@ int main(int argc, char **argv)
 
     Solution s_construct = Construcao(data);
 
-    //showSolution(s_construct);
+    showSolution(s_construct);
     
     return 0;
 }
