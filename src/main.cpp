@@ -62,6 +62,30 @@ vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &
     }
     return custoInsercao;
 }
+void escolher3aleatorios(Solution &s, vector <int> &CL){
+    
+    // começando solução a partir do 1
+    s.sequencia = {1};
+
+    // escolhendo 3 nós aleatórios para serem inseridos na solução
+    for (int i = 0; i < 3; i++)
+    {
+        int tam = CL.size();
+
+        // gerar indice do nó que será selecionado  
+        unsigned int indice_no_aleatorio = rand() % (tam);
+        int no_aleatorio = CL[indice_no_aleatorio];
+
+        // inserindo nó na solução
+        s.sequencia.push_back(no_aleatorio);
+
+        // excluindo nó da lista de candidados
+        CL.erase(CL.begin() + indice_no_aleatorio);
+    }
+
+    //finalizando sequencia com o próprio 1
+    s.sequencia.push_back(1);
+}
 
 // faz a construção de uma solução razoável para o problema através do método de inserção mais barata
 Solution Construcao(Data &data)
@@ -80,25 +104,11 @@ Solution Construcao(Data &data)
     // iniciando processo de formação da solução
     Solution s;
     
-    // começando solução a partir do 1 e finalizando nele mesmo; definindo valor obj como 0
-    s.sequencia = {1};
+    // definindo valor obj como 0
     s.valorObj = 0;
 
-    // escolhendo 3 nós aleatórios para serem inseridos na solução
-    for (int i = 0; i < 3; i++)
-    {
-        // gerar indice do nó que será selecionado  
-        unsigned int indice_no_aleatorio = rand() % (tam);
-        unsigned int no_aleatorio = CL[indice_no_aleatorio];
-
-        // inserindo nó na solução
-        s.sequencia.push_back(no_aleatorio);
-
-        // excluindo nó da lista de candidados
-        CL.erase(CL.begin() + indice_no_aleatorio);
-    }
-
-    s.sequencia.push_back(1);
+    // função para escolher 3 nós aleatórios
+    escolher3aleatorios(s, CL);
 
     showSolution(s);
 
