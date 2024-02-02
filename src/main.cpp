@@ -12,6 +12,7 @@ struct Solution
 {
     vector<int> sequencia;
     double valorObj;
+    double custo;
 };
 
 // estrutura auxiliar para inserção de novos vértices
@@ -87,6 +88,16 @@ void escolher3aleatorios(Solution &s, vector <int> &CL){
     s.sequencia.push_back(1);
 }
 
+void CustoSolucao(Solution &s, Data &d){
+    double custo = 0;
+
+    for (int i=0; i < s.sequencia.size()-1; i++){
+        custo += d.getDistance(s.sequencia[i], s.sequencia[i+1]);
+    }
+    
+    s.custo = custo;
+}
+
 // faz a construção de uma solução razoável para o problema através do método de inserção mais barata
 Solution Construcao(Data &data)
 {
@@ -107,10 +118,11 @@ Solution Construcao(Data &data)
     // definindo valor obj como 0
     s.valorObj = 0;
 
+    // definindo custo inicial como 0
+    s.custo = 0;
+
     // função para escolher 3 nós aleatórios
     escolher3aleatorios(s, CL);
-
-    showSolution(s);
 
     while(!CL.empty())
     {
@@ -137,8 +149,45 @@ Solution Construcao(Data &data)
         CL.erase(indice_selecionado);
     }
 
+    CustoSolucao(s, data);
+
     return s;
     
+}
+
+bool bestImprovementSwap(Solution &s, Data &d){
+
+    double bestDelta = 0;
+    int best_i, best_j;
+    for (int i=1; i < s.sequencia.size()-1; i++){
+
+        int vi = s.sequencia[i];
+        int vi_next = s.sequencia[i+1];
+        int vi_prev = s.sequencia[i-1];
+        
+        for (int j = i + 1; j < s.sequencia.size()-1; j++){
+
+            int vj = s.sequencia[j];
+            int vj_next = s.sequencia[j+1];
+            int vj_prev = s.sequencia[j-1];
+
+            double delta = - (d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj_prev, vj) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vj, vi_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi, vj_next));
+
+            if (delta < bestDelta){
+                bestDelta = delta;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+
+    if (bestDelta < 0){
+        std::swap(s.sequencia[best_i], s.sequencia[best_j]);
+        s.custo = s.custo + bestDelta;
+        return true;
+    }
+
+    return false;
 }
 
 int main(int argc, char **argv)
@@ -152,7 +201,18 @@ int main(int argc, char **argv)
 
     Solution s_construct = Construcao(data);
 
+    cout << "Construção: ";
     showSolution(s_construct);
-    
+    cout << "Custo: " << s_construct.custo << endl;
+
+    bestImprovementSwap(s_construct, data);
+
+    cout << "Best Improvement: " ;
+    showSolution(s_construct);
+    cout << "Custo Delta: " << s_construct.custo << endl;
+
+    CustoSolucao(s_construct, data);
+    cout << "Custo Calculado: " << s_construct.custo << endl;
+
     return 0;
 }
