@@ -141,21 +141,21 @@ Solution Construcao(Data &data)
         int no_selecionado = custoInsercao[selecionado].noInserido;
         int aresta = custoInsercao[selecionado].arestaRemovida;
 
+        // inserindo nó na solução aleatoria
         s.sequencia.insert(s.sequencia.begin() + aresta + 1, no_selecionado);
 
         // buscando indice do nó que foi selecionado
         auto indice_selecionado = find(CL.begin(), CL.end(), no_selecionado);
 
+        // deletando nó da lista de candidados
         CL.erase(indice_selecionado);
     }
 
-    CustoSolucao(s, data);
-
     return s;
-    
 }
 
-bool bestImprovementSwap(Solution &s, Data &d){
+// 
+bool Swap(Solution &s, Data &d){
 
     double bestDelta = 0;
     int best_i, best_j;
@@ -178,9 +178,6 @@ bool bestImprovementSwap(Solution &s, Data &d){
             }
 
             delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj_prev, vj) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vj, vi_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi, vj_next));
-
-            cout << vi << " " << vj << endl;
-            cout << delta << endl;
 
             if (delta < bestDelta){
                 bestDelta = delta;
@@ -209,16 +206,16 @@ int main(int argc, char **argv)
     srand(time(NULL));
 
     Solution s_construct = Construcao(data);
+    CustoSolucao(s_construct, data);
 
     cout << "Construção: ";
     showSolution(s_construct);
     cout << "Custo: " << s_construct.custo << endl;
 
-    bestImprovementSwap(s_construct, data);
-
-    cout << "Best Improvement: " ;
+    cout << "Swap: " ;
+    Swap(s_construct, data);
     showSolution(s_construct);
-    cout << "Custo Delta: " << s_construct.custo << endl;
+    cout << "Custo Swap-neighbor: " << s_construct.custo << endl;
 
     CustoSolucao(s_construct, data);
     cout << "Custo Calculado: " << s_construct.custo << endl;
