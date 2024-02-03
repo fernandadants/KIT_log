@@ -166,12 +166,21 @@ bool bestImprovementSwap(Solution &s, Data &d){
         int vi_prev = s.sequencia[i-1];
         
         for (int j = i + 1; j < s.sequencia.size()-1; j++){
+            double delta = 0;
 
             int vj = s.sequencia[j];
             int vj_next = s.sequencia[j+1];
             int vj_prev = s.sequencia[j-1];
 
-            double delta = - (d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj_prev, vj) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vj, vi_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi, vj_next));
+            if (vi_next == vj){
+                delta += 2 * d.getDistance(vi, vj);
+                cout << "vi == vj " << delta << endl;
+            }
+
+            delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj_prev, vj) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vj, vi_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi, vj_next));
+
+            cout << vi << " " << vj << endl;
+            cout << delta << endl;
 
             if (delta < bestDelta){
                 bestDelta = delta;
