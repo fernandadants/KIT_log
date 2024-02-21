@@ -182,7 +182,6 @@ bool Swap(Solution &s, Data &d){
             // Tratando o caso em que vi e vj são consecutivos
             if (vi_next == vj){
                 delta += 2 * d.getDistance(vi, vj);
-                cout << "vi == vj " << delta << endl;
             }
 
             delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj_prev, vj) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vj, vi_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi, vj_next));
@@ -198,7 +197,7 @@ bool Swap(Solution &s, Data &d){
 
     // Se o melhor delta for menor que 0, aderir à troca.
     if (bestDelta < 0){
-        std::swap(s.sequencia[best_i], s.sequencia[best_j]);
+        swap(s.sequencia[best_i], s.sequencia[best_j]);
         s.custo = s.custo + bestDelta;
         return true;
     }
@@ -207,8 +206,6 @@ bool Swap(Solution &s, Data &d){
 }
 
 bool Two_Opt(Solution &s, Data &d){
-
-    cout << "Two_Opt" << endl;
 
     // Definindo o melhor delta até o momento;
     double bestDelta = 0;
@@ -235,21 +232,13 @@ bool Two_Opt(Solution &s, Data &d){
             int vj_next = s.sequencia[j+1];
             int vj_prev = s.sequencia[j-1];
 
-            // Tratando o caso em que vi e vj são consecutivos
-            if (vi_next == vj){
-                delta += 2 * d.getDistance(vi, vj);
-            }
-
-            //cout << vi << " <-> " << vj << endl;
-            //reverse(s.sequencia.begin()+i, s.sequencia.begin()+j+1);
-
             for (int i: newRoute){
                 cout << i << " ";
             }
 
             cout << endl;
 
-            //delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj_prev, vj) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vj, vi_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi, vj_next));
+            delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vi, vj_next));
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
             if (delta < bestDelta){
@@ -262,11 +251,11 @@ bool Two_Opt(Solution &s, Data &d){
 
     // Se o melhor delta for menor que 0, aderir à troca.
     if (bestDelta < 0){
-        std::swap(s.sequencia[best_i], s.sequencia[best_j]);
+        reverse(s.sequencia.begin()+best_i, s.sequencia.begin()+best_j+1);
         s.custo = s.custo + bestDelta;
         return true;
     }
-
+    
     return false;
 }
 
@@ -296,10 +285,7 @@ int main(int argc, char **argv)
     CustoSolucao(s_construct, data);
     cout << "Custo Calculado: " << s_construct.custo << endl;
 
-    Solution s;
-    s.sequencia = {1, 2, 3, 4, 5, 1};
-
-    Two_Opt(s, data);
+    Two_Opt(s_construct, data);
 
     return 0;
 }
