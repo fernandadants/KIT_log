@@ -346,9 +346,71 @@ bool or_two_Opt(Solution &s, Data &d){
         int i_aux = s.sequencia[best_i+1];
 
         s.sequencia.erase(s.sequencia.begin() + best_i);
-        s.sequencia.erase(s.sequencia.begin() + best_i+1);
+        s.sequencia.erase(s.sequencia.begin() + best_i);
+
         s.sequencia.insert(s.sequencia.begin() + best_j, i);
         s.sequencia.insert(s.sequencia.begin() + best_j+1, i_aux);
+        
+        s.custo = s.custo + bestDelta;
+        return true;
+    }
+
+    return false;
+}
+
+bool or_three_Opt(Solution &s, Data &d){
+    
+    //Definindo o melhor delta até o momento;
+    double bestDelta = 0;
+    int best_i, best_j;
+
+    // Começando a iterar sob os nós da solução
+    for (int i=1; i < s.sequencia.size()-1; i++){
+
+        // Vértice i e seus vizinhos
+        int vi = s.sequencia[i];
+        int vi_prev = s.sequencia[i-1];
+        
+        int vi_three = s.sequencia[i+2];
+        int vi_three_next = s.sequencia[i+3];
+        
+        for (int j = i + 3; j < s.sequencia.size()-1; j++){
+
+            // Inicializando cálculo da variação
+            double delta = 0;
+
+            // Posição vj e seus vizinhos
+            int vj = s.sequencia[j];
+            int vj_next = s.sequencia[j+1];
+            int vj_prev = s.sequencia[j-1];
+
+            delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi_three, vi_three_next) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vi_three_next) + d.getDistance(vj, vi) + d.getDistance(vi_three, vj_next));
+
+            cout << d.getDistance(vi_prev, vi) << " " << d.getDistance(vi_three, vi_three_next) << " " << d.getDistance(vj, vj_next) << " | " << d.getDistance(vi_prev, vi_three_next) << " " <<  d.getDistance(vj, vi) << " " << d.getDistance(vi_three, vj_next) << endl;
+
+            // Se o delta calculado for melhor do que o que já existe, trocar.
+            if (delta < bestDelta){
+                bestDelta = delta;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+
+    // Se o melhor delta for menor que 0, aderir à troca.
+    if (bestDelta < 0){
+
+        int i = s.sequencia[best_i];
+        int i_two = s.sequencia[best_i+1];
+        int i_three = s.sequencia[best_i+2];
+
+        s.sequencia.erase(s.sequencia.begin() + best_i);
+        s.sequencia.erase(s.sequencia.begin() + best_i);
+        s.sequencia.erase(s.sequencia.begin() + best_i);
+
+        s.sequencia.insert(s.sequencia.begin() + best_j, i);
+        s.sequencia.insert(s.sequencia.begin() + best_j+1, i_two);
+        s.sequencia.insert(s.sequencia.begin() + best_j+2, i_three);
         
         s.custo = s.custo + bestDelta;
         return true;
@@ -386,7 +448,7 @@ int main(int argc, char **argv)
     custoSolucao(s_construct, data);
 
     //reinsertion(s_construct, data);
-    or_two_Opt(s_construct, data);
+    or_three_Opt(s_construct, data);
 
     showSolution(s_construct);
     cout << "Custo aCalculado: " << s_construct.custo << endl;
