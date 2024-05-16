@@ -88,7 +88,7 @@ void escolher3aleatorios(Solution &s, vector <int> &CL){
     s.sequencia.push_back(1);
 }
 
-void CustoSolucao(Solution &s, Data &d){
+void custoSolucao(Solution &s, Data &d){
     double custo = 0;
 
     for (int i=0; i < s.sequencia.size()-1; i++){
@@ -99,7 +99,7 @@ void CustoSolucao(Solution &s, Data &d){
 }
 
 // faz a construção de uma solução razoável para o problema através do método de inserção mais barata
-Solution Construcao(Data &data)
+Solution construcao(Data &data)
 {
     int tam = data.getDimension() - 1;
 
@@ -155,7 +155,7 @@ Solution Construcao(Data &data)
 }
 
 // Estrutura de vizinhaça Swap - N1
-bool Swap(Solution &s, Data &d){
+bool swap(Solution &s, Data &d){
 
     // Definindo o melhor delta até o momento;
     double bestDelta = 0;
@@ -205,7 +205,8 @@ bool Swap(Solution &s, Data &d){
     return false;
 }
 
-bool Two_Opt(Solution &s, Data &d){
+// Estrutura de vizinhança Two-Opt
+bool two_Opt(Solution &s, Data &d){
 
     // Definindo o melhor delta até o momento;
     double bestDelta = 0;
@@ -213,6 +214,54 @@ bool Two_Opt(Solution &s, Data &d){
 
     // Começando a iterar sob os nós da solução
     for (int i=1; i < s.sequencia.size()-2; ++i){
+
+        // Vértice i e seus vizinhos
+        int vi = s.sequencia[i];
+        int vi_next = s.sequencia[i+1];
+        int vi_prev = s.sequencia[i-1];
+        
+        for (int j = i + 1; j < s.sequencia.size()-1; ++j){
+
+            // Inicializando cálculo da variação
+            double delta = 0;
+
+            // Vértice j e seus vizinhos
+            int vj = s.sequencia[j];
+            int vj_next = s.sequencia[j+1];
+            int vj_prev = s.sequencia[j-1];
+
+            delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vi, vj_next));
+
+            // Se o delta calculado for melhor do que o que já existe, trocar.
+            if (delta < bestDelta){
+                bestDelta = delta;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+
+    // Se o melhor delta for menor que 0, aderir à troca.
+    if (bestDelta < 0){
+        reverse(s.sequencia.begin()+best_i, s.sequencia.begin()+best_j+1);
+        s.custo = s.custo + bestDelta;
+        cout << bestDelta << endl;
+        return true;
+    }
+
+    return false;
+}
+
+bool reinsertion(Solution &s, Data &d){
+
+    // Definindo o melhor delta até o momento;
+    double bestDelta = 0;
+    int best_i, best_j;
+
+    // Começando a iterar sob os nós da solução
+    for (int i=1; i < s.sequencia.size()-2; ++i){
+
+        vector <int> newRoute(s.sequencia);
 
         // Vértice i e seus vizinhos
         int vi = s.sequencia[i];
@@ -232,12 +281,6 @@ bool Two_Opt(Solution &s, Data &d){
             int vj_next = s.sequencia[j+1];
             int vj_prev = s.sequencia[j-1];
 
-            for (int i: newRoute){
-                cout << i << " ";
-            }
-
-            cout << endl;
-
             delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vi, vj_next));
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
@@ -255,10 +298,9 @@ bool Two_Opt(Solution &s, Data &d){
         s.custo = s.custo + bestDelta;
         return true;
     }
-    
+
     return false;
 }
-
 
 
 int main(int argc, char **argv)
@@ -270,22 +312,30 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
 
-    Solution s_construct = Construcao(data);
-    CustoSolucao(s_construct, data);
+    /*Solution s_construct = construcao(data);
+    custoSolucao(s_construct, data);
 
-    cout << "Construção: ";
+     cout << "Construção: ";
     showSolution(s_construct);
     cout << "Custo: " << s_construct.custo << endl;
 
     cout << "Swap: " ;
-    Swap(s_construct, data);
+    swap(s_construct, data);
     showSolution(s_construct);
     cout << "Custo Swap-neighbor: " << s_construct.custo << endl;
 
-    CustoSolucao(s_construct, data);
-    cout << "Custo Calculado: " << s_construct.custo << endl;
+    custoSolucao(s_construct, data);
+    cout << "Custo Calculado: " << s_construct.custo << endl; */
 
-    Two_Opt(s_construct, data);
+    Solution s_construct;
+    s_construct.sequencia = {1, 2, 3, 4, 5, 6, 1};
+    custoSolucao(s_construct, data);
+
+    two_Opt(s_construct, data);
+
+    showSolution(s_construct);
+    cout << "Custo aCalculado: " << s_construct.custo << endl;
+
 
     return 0;
 }
