@@ -151,6 +151,8 @@ Solution construcao(Data &data)
         CL.erase(indice_selecionado);
     }
 
+    custoSolucao(s, data);
+
     return s;
 }
 
@@ -245,7 +247,6 @@ bool two_Opt(Solution &s, Data &d){
     if (bestDelta < 0){
         reverse(s.sequencia.begin()+best_i, s.sequencia.begin()+best_j+1);
         s.custo = s.custo + bestDelta;
-        cout << bestDelta << endl;
         return true;
     }
 
@@ -277,8 +278,6 @@ bool reinsertion(Solution &s, Data &d){
             int vj_prev = s.sequencia[j-1];
 
             delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vi_next) + d.getDistance(vj, vi) + d.getDistance(vi, vj_next));
-
-            cout << delta << endl;
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
             if (delta < bestDelta){
@@ -386,8 +385,6 @@ bool or_three_Opt(Solution &s, Data &d){
 
             delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi_three, vi_three_next) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vi_three_next) + d.getDistance(vj, vi) + d.getDistance(vi_three, vj_next));
 
-            cout << d.getDistance(vi_prev, vi) << " " << d.getDistance(vi_three, vi_three_next) << " " << d.getDistance(vj, vj_next) << " | " << d.getDistance(vi_prev, vi_three_next) << " " <<  d.getDistance(vj, vi) << " " << d.getDistance(vi_three, vj_next) << endl;
-
             // Se o delta calculado for melhor do que o que já existe, trocar.
             if (delta < bestDelta){
                 bestDelta = delta;
@@ -419,6 +416,48 @@ bool or_three_Opt(Solution &s, Data &d){
     return false;
 }
 
+void BuscaLocal(Solution &s, Data &d){
+    vector <int> NL = {1, 2, 3, 4, 5};
+    bool improved = false;
+
+    while(NL.empty() == false){
+        int n = rand() % NL.size();
+        switch (NL[n]){
+        case 1:
+            improved = swap(s, d);
+            cout << "SWAP: ";
+            showSolution(s);
+            break;
+        case 2:
+            improved = two_Opt(s, d);
+            cout << "TWO-OPT: ";
+            showSolution(s);
+            break;
+        case 3:
+            improved = reinsertion(s, d);
+            cout << "REINSERTION: ";
+            showSolution(s);
+            break;
+        case 4:
+            improved = or_two_Opt(s, d);
+            cout << "OR TWO: ";   
+            showSolution(s); 
+            break;
+        case 5:
+            improved = or_three_Opt(s, d);
+            cout << "OR THREE: ";
+            showSolution(s);
+            break;
+        }
+
+        if(improved){
+            NL = {1, 2, 3, 4, 5};
+        }else{
+            NL.erase(NL.begin()+n);
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     
@@ -428,28 +467,15 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
 
-    /*Solution s_construct = construcao(data);
-    custoSolucao(s_construct, data);
+    Solution s_construct = construcao(data);
 
-     cout << "Construção: ";
+    cout << "Construção: ";
     showSolution(s_construct);
     cout << "Custo: " << s_construct.custo << endl;
 
-    cout << "Swap: " ;
-    swap(s_construct, data);
-    showSolution(s_construct);
-    cout << "Custo Swap-neighbor: " << s_construct.custo << endl;
+    BuscaLocal(s_construct, data);
 
-    custoSolucao(s_construct, data);
-    cout << "Custo Calculado: " << s_construct.custo << endl; */
-
-    Solution s_construct;
-    s_construct.sequencia = {1, 2, 3, 4, 5, 6, 1};
-    custoSolucao(s_construct, data);
-
-    //reinsertion(s_construct, data);
-    or_three_Opt(s_construct, data);
-
+    cout << "Busca Local: ";
     showSolution(s_construct);
     cout << "Custo aCalculado: " << s_construct.custo << endl;
 
