@@ -315,11 +315,13 @@ bool or_opt(Solution &s, Data &d, int bloco)
             int vj_prev = s.sequencia[j - 1];
 
             delta += -(d.getDistance(vi_prev, vi) + d.getDistance(vi_aux, vi_aux_next) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vi_aux_next) + d.getDistance(vj, vi) + d.getDistance(vi_aux, vj_next));
+            cout << delta << endl;
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
             if (delta < bestDelta)
             {
                 bestDelta = delta;
+                cout << "Best i: " << i << " Best j: " << j << "\n";
                 best_i = i;
                 best_j = j;
             }
@@ -329,10 +331,20 @@ bool or_opt(Solution &s, Data &d, int bloco)
     // Se o melhor delta for menor que 0, aderir à troca.
     if (bestDelta < 0)
     {
-        cout << "Best i: " << best_i << " Best j: " << best_j << "\n";
+        // cout << "Best i: " << best_i << " Best j: " << best_j << "\n";
         vector<int> sub_seq = vector<int>(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
-        s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
-        s.sequencia.insert(s.sequencia.begin() + best_j, sub_seq.begin(), sub_seq.end());
+
+        if (best_i > best_j)
+        {
+            s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
+            s.sequencia.insert(s.sequencia.begin() + best_j + 1, sub_seq.begin(), sub_seq.end());
+        }
+        else
+        {
+            s.sequencia.insert(s.sequencia.begin() + best_j + 1, sub_seq.begin(), sub_seq.end());
+            showSequence(s.sequencia);
+            s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
+        }
 
         s.custo = s.custo + bestDelta;
         return true;
@@ -405,8 +417,9 @@ Solution perturbacao(Solution &s, Data &d)
             {
                 isOver = true;
                 cout << "IsOver: true\n";
-
-            }else if(s.sequencia[j2+i] == s.sequencia[j1]){
+            }
+            else if (s.sequencia[j2 + i] == s.sequencia[j1])
+            {
 
                 isOver = true;
                 cout << "IsOver: true\n";
@@ -429,8 +442,9 @@ Solution perturbacao(Solution &s, Data &d)
         s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
         s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
         s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
-
-    }else{
+    }
+    else
+    {
 
         s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
         s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
@@ -485,15 +499,16 @@ int main(int argc, char **argv)
 
     // Solution s_construct = construcao(data);
     Solution s_construct;
-    s_construct.sequencia = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1};
+    s_construct.sequencia = {1, 2, 3, 4, 5, 6, 1};
 
     cout << "Construção: ";
     showSolution(s_construct);
 
-    or_opt(s_construct, data, 2);
+    or_opt(s_construct, data, 3);
 
     cout << "Or-opt: ";
     showSolution(s_construct);
+    cout << "Custo: " << s_construct.custo << endl;
 
     return 0;
 }
