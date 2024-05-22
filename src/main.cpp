@@ -18,28 +18,40 @@ struct Solution
 // estrutura auxiliar para inserção de novos vértices
 struct InsertionInfo
 {
-    int noInserido; // vértice k que será inserido
+    int noInserido;     // vértice k que será inserido
     int arestaRemovida; // aresta {i, j} que será removida aṕos a inserção do novo k
-    double custo; // custo ao inserir o vértice 'k' na aresta (i, j)
+    double custo;       // custo ao inserir o vértice 'k' na aresta (i, j)
 
     // estrutura necessária para fazer a comparação de custo
-    inline bool operator<(const InsertionInfo &right){
+    inline bool operator<(const InsertionInfo &right)
+    {
         return custo < right.custo;
     }
 };
 
 // iterando sobre os vértices da solução e mostrar os resultados obtidos
-void showSolution(Solution &s){
-    for(int i=0; i < s.sequencia.size(); i++)
+void showSolution(Solution &s)
+{
+    for (int i = 0; i < s.sequencia.size(); i++)
     {
         cout << s.sequencia[i] << " ";
-        //cout << s.sequencia.back() << endl;
+        // cout << s.sequencia.back() << endl;
     }
     cout << endl;
 }
 
-vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &d){
-    
+void showSequence(vector<int> &s)
+{
+    for (int i = 0; i < s.size(); i++)
+    {
+        cout << s[i] << " ";
+    }
+    cout << endl;
+}
+
+vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &d)
+{
+
     // o tamanho do vetor de custoInsercao será do tamanho de sequencia * o tamanho da lista de candidados
     const int tam = (s.sequencia.size() - 1) * CL.size();
 
@@ -47,13 +59,14 @@ vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &
 
     int l = 0;
     // iterando na solução
-    for (int a = 0; a < s.sequencia.size()-1; a++)
+    for (int a = 0; a < s.sequencia.size() - 1; a++)
     {
         int i = s.sequencia[a];
-        int j = s.sequencia[a+1];
+        int j = s.sequencia[a + 1];
 
         // inserindo todos os vertices da lista de candidados e calculando custo
-        for (auto k: CL){
+        for (auto k : CL)
+        {
 
             custoInsercao[l].custo = d.getDistance(i, k) + d.getDistance(k, j) - d.getDistance(i, j);
             custoInsercao[l].noInserido = k;
@@ -63,8 +76,9 @@ vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &
     }
     return custoInsercao;
 }
-void escolher3aleatorios(Solution &s, vector <int> &CL){
-    
+void escolher3aleatorios(Solution &s, vector<int> &CL)
+{
+
     // começando solução a partir do 1
     s.sequencia = {1};
 
@@ -73,7 +87,7 @@ void escolher3aleatorios(Solution &s, vector <int> &CL){
     {
         int tam = CL.size();
 
-        // gerar indice do nó que será selecionado  
+        // gerar indice do nó que será selecionado
         unsigned int indice_no_aleatorio = rand() % (tam);
         int no_aleatorio = CL[indice_no_aleatorio];
 
@@ -84,17 +98,19 @@ void escolher3aleatorios(Solution &s, vector <int> &CL){
         CL.erase(CL.begin() + indice_no_aleatorio);
     }
 
-    //finalizando sequencia com o próprio 1
+    // finalizando sequencia com o próprio 1
     s.sequencia.push_back(1);
 }
 
-void custoSolucao(Solution &s, Data &d){
+void custoSolucao(Solution &s, Data &d)
+{
     double custo = 0;
 
-    for (int i=0; i < s.sequencia.size()-1; i++){
-        custo += d.getDistance(s.sequencia[i], s.sequencia[i+1]);
+    for (int i = 0; i < s.sequencia.size() - 1; i++)
+    {
+        custo += d.getDistance(s.sequencia[i], s.sequencia[i + 1]);
     }
-    
+
     s.custo = custo;
 }
 
@@ -106,7 +122,7 @@ Solution construcao(Data &data)
     // escrevendo lista de candidatos e começando com tam-1 devido a solução já começar com o 1.
     vector<int> CL(tam);
 
-    //inicializando valores da lista de candidatos e começando a partir do 2
+    // inicializando valores da lista de candidatos e começando a partir do 2
     for (int i = 0, k = 2; i < tam; i++, k++)
     {
         CL[i] = k;
@@ -114,7 +130,7 @@ Solution construcao(Data &data)
 
     // iniciando processo de formação da solução
     Solution s;
-    
+
     // definindo valor obj como 0
     s.valorObj = 0;
 
@@ -124,7 +140,7 @@ Solution construcao(Data &data)
     // função para escolher 3 nós aleatórios
     escolher3aleatorios(s, CL);
 
-    while(!CL.empty())
+    while (!CL.empty())
     {
         // criando vetor que irá calcular o custo de inserção do novo nó
         vector<InsertionInfo> custoInsercao = calcularCustoInsercao(s, CL, data);
@@ -136,7 +152,7 @@ Solution construcao(Data &data)
         double alpha = rand() % 1 + 0.000001;
         int indice_alpha = ceil(alpha * (custoInsercao.size()));
 
-        // selecionando um vertice aleatorio no vetor, do inicio até o numero alpha 
+        // selecionando um vertice aleatorio no vetor, do inicio até o numero alpha
         unsigned int selecionado = rand() % indice_alpha;
         int no_selecionado = custoInsercao[selecionado].noInserido;
         int aresta = custoInsercao[selecionado].arestaRemovida;
@@ -157,39 +173,44 @@ Solution construcao(Data &data)
 }
 
 // Estrutura de vizinhaça Swap - N1
-bool swap(Solution &s, Data &d){
+bool swap(Solution &s, Data &d)
+{
 
     // Definindo o melhor delta até o momento;
     double bestDelta = 0;
     int best_i, best_j;
 
     // Começando a iterar sob os nós da solução
-    for (int i=1; i < s.sequencia.size()-1; i++){
+    for (int i = 1; i < s.sequencia.size() - 1; i++)
+    {
 
         // Vértice i e seus vizinhos
         int vi = s.sequencia[i];
-        int vi_next = s.sequencia[i+1];
-        int vi_prev = s.sequencia[i-1];
-        
-        for (int j = i + 1; j < s.sequencia.size()-1; j++){
+        int vi_next = s.sequencia[i + 1];
+        int vi_prev = s.sequencia[i - 1];
+
+        for (int j = i + 1; j < s.sequencia.size() - 1; j++)
+        {
 
             // Inicializando cálculo da variação
             double delta = 0;
 
             // Vértice j e seus vizinhos
             int vj = s.sequencia[j];
-            int vj_next = s.sequencia[j+1];
-            int vj_prev = s.sequencia[j-1];
+            int vj_next = s.sequencia[j + 1];
+            int vj_prev = s.sequencia[j - 1];
 
             // Tratando o caso em que vi e vj são consecutivos
-            if (vi_next == vj){
+            if (vi_next == vj)
+            {
                 delta += 2 * d.getDistance(vi, vj);
             }
 
-            delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj_prev, vj) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vj, vi_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi, vj_next));
+            delta += -(d.getDistance(vi_prev, vi) + d.getDistance(vi, vi_next) + d.getDistance(vj_prev, vj) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vj, vi_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi, vj_next));
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
-            if (delta < bestDelta){
+            if (delta < bestDelta)
+            {
                 bestDelta = delta;
                 best_i = i;
                 best_j = j;
@@ -198,7 +219,8 @@ bool swap(Solution &s, Data &d){
     }
 
     // Se o melhor delta for menor que 0, aderir à troca.
-    if (bestDelta < 0){
+    if (bestDelta < 0)
+    {
         swap(s.sequencia[best_i], s.sequencia[best_j]);
         s.custo = s.custo + bestDelta;
         return true;
@@ -208,34 +230,38 @@ bool swap(Solution &s, Data &d){
 }
 
 // Estrutura de vizinhança Two-Opt
-bool two_Opt(Solution &s, Data &d){
+bool two_Opt(Solution &s, Data &d)
+{
 
     // Definindo o melhor delta até o momento;
     double bestDelta = 0;
     int best_i, best_j;
 
     // Começando a iterar sob os nós da solução
-    for (int i=1; i < s.sequencia.size()-2; ++i){
+    for (int i = 1; i < s.sequencia.size() - 2; ++i)
+    {
 
         // Vértice i e seus vizinhos
         int vi = s.sequencia[i];
-        int vi_next = s.sequencia[i+1];
-        int vi_prev = s.sequencia[i-1];
-        
-        for (int j = i + 1; j < s.sequencia.size()-1; ++j){
+        int vi_next = s.sequencia[i + 1];
+        int vi_prev = s.sequencia[i - 1];
+
+        for (int j = i + 1; j < s.sequencia.size() - 1; ++j)
+        {
 
             // Inicializando cálculo da variação
             double delta = 0;
 
             // Vértice j e seus vizinhos
             int vj = s.sequencia[j];
-            int vj_next = s.sequencia[j+1];
-            int vj_prev = s.sequencia[j-1];
+            int vj_next = s.sequencia[j + 1];
+            int vj_prev = s.sequencia[j - 1];
 
-            delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vi, vj_next));
+            delta += -(d.getDistance(vi_prev, vi) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vj) + d.getDistance(vi, vj_next));
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
-            if (delta < bestDelta){
+            if (delta < bestDelta)
+            {
                 bestDelta = delta;
                 best_i = i;
                 best_j = j;
@@ -244,8 +270,9 @@ bool two_Opt(Solution &s, Data &d){
     }
 
     // Se o melhor delta for menor que 0, aderir à troca.
-    if (bestDelta < 0){
-        reverse(s.sequencia.begin()+best_i, s.sequencia.begin()+best_j+1);
+    if (bestDelta < 0)
+    {
+        reverse(s.sequencia.begin() + best_i, s.sequencia.begin() + best_j + 1);
         s.custo = s.custo + bestDelta;
         return true;
     }
@@ -253,41 +280,45 @@ bool two_Opt(Solution &s, Data &d){
     return false;
 }
 
-bool or_opt(Solution &s, Data &d, int bloco){
+bool or_opt(Solution &s, Data &d, int bloco)
+{
 
-    //Definindo o melhor delta até o momento;
+    // Definindo o melhor delta até o momento;
     double bestDelta = 0;
     int best_i, best_j;
 
     // Começando a iterar sob os nós da solução
-    for (int i=1; i < s.sequencia.size()-1; i++){
+    for (int i = 1; i < s.sequencia.size() - 1; i++)
+    {
 
         // Vértice i e a posição do ultimo no bloco
         int vi = s.sequencia[i];
-        int vi_prev = s.sequencia[i-1];
-        
-        int vi_aux = s.sequencia[i+bloco-1];
-        int vi_aux_next = s.sequencia[i+bloco];
+        int vi_prev = s.sequencia[i - 1];
+
+        int vi_aux = s.sequencia[i + bloco - 1];
+        int vi_aux_next = s.sequencia[i + bloco];
 
         // Um exemplo de bloco de 3 elementos:
         // Sequencia: {1, 2, 3, 4, 5, 6, 1}
         // Bloco:        {2, 3, 4}
         // Vértices: {vi, middle, vi_aux}
-        
-        for (int j = i + bloco; j < s.sequencia.size()-2; j++){
+
+        for (int j = i + bloco; j < s.sequencia.size() - 2; j++)
+        {
 
             // Inicializando cálculo da variação
             double delta = 0;
 
             // Posição vj e seus vizinhos
             int vj = s.sequencia[j];
-            int vj_next = s.sequencia[j+1];
-            int vj_prev = s.sequencia[j-1];
+            int vj_next = s.sequencia[j + 1];
+            int vj_prev = s.sequencia[j - 1];
 
-            delta += - (d.getDistance(vi_prev, vi) + d.getDistance(vi_aux, vi_aux_next) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vi_aux_next) + d.getDistance(vj, vi) + d.getDistance(vi_aux, vj_next));
+            delta += -(d.getDistance(vi_prev, vi) + d.getDistance(vi_aux, vi_aux_next) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vi_aux_next) + d.getDistance(vj, vi) + d.getDistance(vi_aux, vj_next));
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
-            if (delta < bestDelta){
+            if (delta < bestDelta)
+            {
                 bestDelta = delta;
                 best_i = i;
                 best_j = j;
@@ -296,8 +327,9 @@ bool or_opt(Solution &s, Data &d, int bloco){
     }
 
     // Se o melhor delta for menor que 0, aderir à troca.
-    if (bestDelta < 0){
-        rotate(s.sequencia.begin()+best_i, s.sequencia.begin()+best_i+bloco, s.sequencia.begin()+best_j+1);
+    if (bestDelta < 0)
+    {
+        rotate(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco, s.sequencia.begin() + best_j + 1);
         s.custo = s.custo + bestDelta;
         return true;
     }
@@ -305,69 +337,159 @@ bool or_opt(Solution &s, Data &d, int bloco){
     return false;
 }
 
-void BuscaLocal(Solution &s, Data &d){
-    vector <int> NL = {1, 2, 3, 4, 5};
+void BuscaLocal(Solution &s, Data &d)
+{
+    vector<int> NL = {1, 2, 3, 4, 5};
     bool improved = false;
 
-    while(NL.empty() == false){
+    while (NL.empty() == false)
+    {
         int n = rand() % NL.size();
 
-        switch (NL[n]){
+        switch (NL[n])
+        {
         case 1:
             improved = swap(s, d);
-            cout << "SWAP: ";
-            showSolution(s);
             break;
         case 2:
             improved = two_Opt(s, d);
-            cout << "TWO-OPT: ";
-            showSolution(s);
             break;
         case 3:
             improved = or_opt(s, d, 1);
-            cout << "REINSERTION: ";
-            showSolution(s);
             break;
         case 4:
             improved = or_opt(s, d, 2);
-            cout << "OR TWO: ";   
-            showSolution(s); 
             break;
         case 5:
             improved = or_opt(s, d, 3);
-            cout << "OR THREE: ";
-            showSolution(s);
             break;
         }
 
-        if(improved){
+        if (improved)
+        {
             NL = {1, 2, 3, 4, 5};
-        }else{
-            NL.erase(NL.begin()+n);
+        }
+        else
+        {
+            NL.erase(NL.begin() + n);
         }
     }
 }
 
+Solution perturbacao(Solution &s, Data &d)
+{
+
+    int tam = s.sequencia.size();
+
+    int i1, j1, i2, j2;
+
+    // Gerar duas sequencias de números não sobrepostos
+    while (true)
+    {
+        bool isOver = false;
+
+        i1 = rand() % (tam / 10) + 2;     // tamanho do bloco 1
+        j1 = rand() % (tam - i1 - 2) + 2; // posição de inicio do bloco 1
+
+        i2 = rand() % (tam / 10) + 2;     // tamanho do bloco 2
+        j2 = rand() % (tam - i2 - 2) + 2; // posição de inicio do bloco 2
+
+        // Verificar se os blocos são sobrepostos
+        for (int i = 0; i < i2; i++)
+        {
+            if (s.sequencia[j1 + i] == s.sequencia[j2])
+            {
+                isOver = true;
+                cout << "IsOver: true\n";
+
+            }else if(s.sequencia[j2+i] == s.sequencia[j1]){
+
+                isOver = true;
+                cout << "IsOver: true\n";
+            }
+        }
+
+        // Se não estão sobrepostos, sair do loop
+        if (!isOver)
+        {
+            break;
+        }
+    }
+
+    vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+    vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+
+    if (j1 > j2)
+    {
+        s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+        s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+        s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
+        s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
+
+    }else{
+
+        s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+        s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+        s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
+        s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
+    }
+
+    return s;
+}
+
+Solution ILS(int maxIter, int maxIterIls, Data &d)
+{
+
+    Solution bestOfAll;
+    bestOfAll.custo = INFINITY;
+
+    for (int i = 0; i < maxIter; i++)
+    {
+
+        Solution s = construcao(d);
+        Solution best = s;
+        int iterIls = 0;
+
+        while (iterIls <= maxIterIls)
+        {
+            BuscaLocal(s, d);
+            if (s.custo < best.custo)
+            {
+                best = s;
+                iterIls = 0;
+            }
+            s = perturbacao(best, d);
+            iterIls++;
+        }
+
+        if (best.custo < bestOfAll.custo)
+        {
+            bestOfAll = best;
+        }
+    }
+
+    return bestOfAll;
+}
 int main(int argc, char **argv)
 {
-    
+
     auto data = Data(argc, argv[1]);
     data.read();
     unsigned int n = data.getDimension();
 
     srand(time(NULL));
 
-    Solution s_construct = construcao(data);
+    // Solution s_construct = construcao(data);
+    Solution s_construct;
+    s_construct.sequencia = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1};
 
     cout << "Construção: ";
     showSolution(s_construct);
-    cout << "Custo: " << s_construct.custo << endl;
 
-    BuscaLocal(s_construct, data);
+    perturbacao(s_construct, data);
 
-    cout << "Busca Local: ";
+    cout << "Perturbação: ";
     showSolution(s_construct);
-    cout << "Custo aCalculado: " << s_construct.custo << endl;
 
     return 0;
 }
