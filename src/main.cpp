@@ -329,7 +329,11 @@ bool or_opt(Solution &s, Data &d, int bloco)
     // Se o melhor delta for menor que 0, aderir à troca.
     if (bestDelta < 0)
     {
-        rotate(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco, s.sequencia.begin() + best_j + 1);
+        cout << "Best i: " << best_i << " Best j: " << best_j << "\n";
+        vector<int> sub_seq = vector<int>(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
+        s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
+        s.sequencia.insert(s.sequencia.begin() + best_j, sub_seq.begin(), sub_seq.end());
+
         s.custo = s.custo + bestDelta;
         return true;
     }
@@ -486,9 +490,9 @@ int main(int argc, char **argv)
     cout << "Construção: ";
     showSolution(s_construct);
 
-    perturbacao(s_construct, data);
+    or_opt(s_construct, data, 2);
 
-    cout << "Perturbação: ";
+    cout << "Or-opt: ";
     showSolution(s_construct);
 
     return 0;
