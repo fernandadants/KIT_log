@@ -315,13 +315,11 @@ bool or_opt(Solution &s, Data &d, int bloco)
             int vj_prev = s.sequencia[j - 1];
 
             delta += -(d.getDistance(vi_prev, vi) + d.getDistance(vi_aux, vi_aux_next) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vi_aux_next) + d.getDistance(vj, vi) + d.getDistance(vi_aux, vj_next));
-            cout << delta << endl;
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
             if (delta < bestDelta)
             {
                 bestDelta = delta;
-                cout << "Best i: " << i << " Best j: " << j << "\n";
                 best_i = i;
                 best_j = j;
             }
@@ -415,13 +413,11 @@ Solution perturbacao(Solution &s, Data &d)
             if (s.sequencia[j1 + i] == s.sequencia[j2])
             {
                 isOver = true;
-                cout << "IsOver: true\n";
             }
             else if (s.sequencia[j2 + i] == s.sequencia[j1])
             {
 
                 isOver = true;
-                cout << "IsOver: true\n";
             }
         }
 
@@ -430,6 +426,12 @@ Solution perturbacao(Solution &s, Data &d)
         {
             break;
         }
+    }
+
+    if (j1 > j2)
+    {
+        swap(i1, i2);
+        swap(j1, j2);
     }
 
     // Vértice i1 e suas respectivas vizinhanças
@@ -456,33 +458,22 @@ Solution perturbacao(Solution &s, Data &d)
 
     if (vi1_aux_next == vi2)
     {
-        delta -= d.getDistance(vi2_aux, vi1_aux_next) + d.getDistance(vi2_prev, vi1) - d.getDistance(vi2_prev, vi2);
+        delta += d.getDistance(vi1_aux, vi2) - d.getDistance(vi1_aux, vi1) - d.getDistance(vi2_aux, vi2) + d.getDistance(vi2_aux, vi1);
     }
 
     delta += -(d.getDistance(vi1_prev, vi1) + d.getDistance(vi1_aux, vi1_aux_next) + d.getDistance(vi2_prev, vi2) + d.getDistance(vi2_aux, vi2_aux_next)) + (d.getDistance(vi1_prev, vi2) + d.getDistance(vi2_aux, vi1_aux_next) + d.getDistance(vi2_prev, vi1) + d.getDistance(vi1_aux, vi2_aux_next));
-    cout << delta << endl;
 
     // Se o melhor delta for menor que 0, aderir à troca.
     if (delta < 0)
     {
         vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
         vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+        cout << "Houve perturbacao\n";
 
-        if (j1 > j2)
-        {
-            s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
-            s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
-            s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
-            s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
-        }
-        else
-        {
-
-            s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
-            s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
-            s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
-            s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
-        }
+        s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+        s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+        s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
+        s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
 
         s.custo = s.custo + delta;
         return s;
@@ -501,6 +492,7 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
     {
 
         Solution s = construcao(d);
+        showSolution(s);
         Solution best = s;
         int iterIls = 0;
 
@@ -512,6 +504,7 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
                 best = s;
                 iterIls = 0;
             }
+
             s = perturbacao(best, d);
             iterIls++;
         }
@@ -524,6 +517,7 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
 
     return bestOfAll;
 }
+
 int main(int argc, char **argv)
 {
 
@@ -533,14 +527,20 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
 
-    Solution s;
-    s.sequencia = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1};
-    custoSolucao(s, data);
+    int maxIter = 50;
+    int maxIterIls;
 
-    perturbacao(s, data);
-    showSolution(s);
-    cout << s.custo << endl;
+    if (n > 150)
+    {
+        maxIterIls = n / 2;
+    }
+    else
+    {
+        maxIterIls = n;
+    }
 
+    Solution s = ILS(maxIter, maxIterIls, data);
+    cout << "Custo: " << s.custo << endl; 
 
     return 0;
 }
