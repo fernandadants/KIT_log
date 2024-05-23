@@ -426,7 +426,10 @@ Solution perturbacao(Solution &s, Data &d)
             {
                 isOver = true;
             }
-            else if (s.sequencia[j2 + i] == s.sequencia[j1])
+        }
+
+        for(int i=0; i < i2; i++){
+            if (s.sequencia[j2 + i] == s.sequencia[j1])
             {
                 isOver = true;
             }
@@ -570,10 +573,22 @@ int main(int argc, char **argv)
         maxIterIls = n;
     } 
 
-    Solution s = ILS(maxIter, maxIterIls, data);
-    cout << "Solução ILS: " << endl;
-    showSolution(s);
+    Solution best, s;
+    best.custo = INFINITY;
+
+    for (int i=0; i<10;i++){
+        s = ILS(maxIter, maxIterIls, data);
+        showSolution(s);
+        if (s.custo < best.custo){
+            best = s;
+        }
+    }
+
+    //Solution s = ILS(maxIter, maxIterIls, data);
+    //cout << "Solução ILS: " << endl;
+    //showSolution(s);
     cout << "Custo: " << s.custo << endl;
+    cout << "Custo Calculado: " << custoSolucao2(s, data) << endl;
 
     return 0;
 }
