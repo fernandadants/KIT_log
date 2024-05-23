@@ -342,7 +342,6 @@ bool or_opt(Solution &s, Data &d, int bloco)
         else
         {
             s.sequencia.insert(s.sequencia.begin() + best_j + 1, sub_seq.begin(), sub_seq.end());
-            showSequence(s.sequencia);
             s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
         }
 
@@ -394,7 +393,7 @@ void BuscaLocal(Solution &s, Data &d)
 
 Solution perturbacao(Solution &s, Data &d)
 {
-
+    int bestdelta = 0;
     int tam = s.sequencia.size();
 
     int i1, j1, i2, j2;
@@ -433,23 +432,60 @@ Solution perturbacao(Solution &s, Data &d)
         }
     }
 
-    vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
-    vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+    // Vértice i1 e suas respectivas vizinhanças
+    int vi1 = s.sequencia[j1];
+    int vi1_prev = s.sequencia[j1 - 1];
 
-    if (j1 > j2)
+    int vi1_aux = s.sequencia[j1 + i1 - 1];
+    int vi1_aux_next = s.sequencia[j1 + i1];
+
+    // Um exemplo de bloco de 3 elementos:
+    // Sequencia: {1, 2, 3, 4, 5, 6, 1}
+    // Bloco:        {2, 3, 4}
+    // Vértices: {vi, middle, vi_aux}
+
+    // Cálculo da variação
+    double delta = 0;
+
+    // Posição vj e seus vizinhos
+    int vi2 = s.sequencia[j2];
+    int vi2_prev = s.sequencia[j2 - 1];
+
+    int vi2_aux = s.sequencia[j2 + i2 - 1];
+    int vi2_aux_next = s.sequencia[j2 + i2];
+
+    if (vi1_aux_next == vi2)
     {
-        s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
-        s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
-        s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
-        s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
+        delta -= d.getDistance(vi2_aux, vi1_aux_next) + d.getDistance(vi2_prev, vi1) - d.getDistance(vi2_prev, vi2);
     }
-    else
-    {
 
-        s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
-        s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
-        s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
-        s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
+    delta += -(d.getDistance(vi1_prev, vi1) + d.getDistance(vi1_aux, vi1_aux_next) + d.getDistance(vi2_prev, vi2) + d.getDistance(vi2_aux, vi2_aux_next)) + (d.getDistance(vi1_prev, vi2) + d.getDistance(vi2_aux, vi1_aux_next) + d.getDistance(vi2_prev, vi1) + d.getDistance(vi1_aux, vi2_aux_next));
+    cout << delta << endl;
+
+    // Se o melhor delta for menor que 0, aderir à troca.
+    if (delta < 0)
+    {
+        vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+        vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+
+        if (j1 > j2)
+        {
+            s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+            s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+            s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
+            s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
+        }
+        else
+        {
+
+            s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+            s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+            s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
+            s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
+        }
+
+        s.custo = s.custo + delta;
+        return s;
     }
 
     return s;
@@ -497,18 +533,14 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
 
-    // Solution s_construct = construcao(data);
-    Solution s_construct;
-    s_construct.sequencia = {1, 2, 3, 4, 5, 6, 1};
+    Solution s;
+    s.sequencia = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1};
+    custoSolucao(s, data);
 
-    cout << "Construção: ";
-    showSolution(s_construct);
+    perturbacao(s, data);
+    showSolution(s);
+    cout << s.custo << endl;
 
-    or_opt(s_construct, data, 3);
-
-    cout << "Or-opt: ";
-    showSolution(s_construct);
-    cout << "Custo: " << s_construct.custo << endl;
 
     return 0;
 }
