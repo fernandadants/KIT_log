@@ -114,6 +114,18 @@ void custoSolucao(Solution &s, Data &d)
     s.custo = custo;
 }
 
+double custoSolucao2(Solution &s, Data &d){
+
+    double custo = 0;
+
+     for (int i = 0; i < s.sequencia.size() - 1; i++)
+    {
+        custo += d.getDistance(s.sequencia[i], s.sequencia[i + 1]);
+    }
+
+    return custo;
+}
+
 // faz a construção de uma solução razoável para o problema através do método de inserção mais barata
 Solution construcao(Data &data)
 {
@@ -408,7 +420,7 @@ Solution perturbacao(Solution &s, Data &d)
         j2 = rand() % (tam - i2 - 2) + 2; // posição de inicio do bloco 2
 
         // Verificar se os blocos são sobrepostos
-        for (int i = 0; i < i2; i++)
+        for (int i = 0; i < i1; i++)
         {
             if (s.sequencia[j1 + i] == s.sequencia[j2])
             {
@@ -416,7 +428,6 @@ Solution perturbacao(Solution &s, Data &d)
             }
             else if (s.sequencia[j2 + i] == s.sequencia[j1])
             {
-
                 isOver = true;
             }
         }
@@ -465,17 +476,36 @@ Solution perturbacao(Solution &s, Data &d)
 
     // Se o melhor delta for menor que 0, aderir à troca.
     if (delta < 0)
-    {
+    {   
+        s.custo = s.custo + delta;
+
         vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
         vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
-        cout << "Houve perturbacao\n";
+
+        /* if (s.custo != custoSolucao2(s, d)){
+            cout << "Erro na perturbação! Sequencias escolhidas:" << endl;
+            showSequence(sub_seq1);
+            showSequence(sub_seq2);
+            cout << "Custo: " << s.custo << endl;
+            cout << "Custo Calculado: " << custoSolucao2(s, d) << endl;
+        }
+        showSolution(s); */
 
         s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
         s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
         s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
-        s.sequencia.insert(s.sequencia.begin() + j2, sub_seq1.begin(), sub_seq1.end());
 
-        s.custo = s.custo + delta;
+        if (i2 > i1)
+        {
+            s.sequencia.insert(s.sequencia.begin() + j2 + i2 - i1, sub_seq1.begin(), sub_seq1.end());
+        }
+        else
+        {
+            s.sequencia.insert(s.sequencia.begin() + j2 + i1 - i2, sub_seq1.begin(), sub_seq1.end());
+        }
+        // s.sequencia.insert(s.sequencia.begin() + j2+i2-i1, sub_seq1.begin(), sub_seq1.end());
+        //showSequence(s.sequencia);
+        
         return s;
     }
 
@@ -492,13 +522,13 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
     {
 
         Solution s = construcao(d);
-        showSolution(s);
         Solution best = s;
         int iterIls = 0;
 
         while (iterIls <= maxIterIls)
         {
             BuscaLocal(s, d);
+
             if (s.custo < best.custo)
             {
                 best = s;
@@ -506,6 +536,7 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
             }
 
             s = perturbacao(best, d);
+
             iterIls++;
         }
 
@@ -537,10 +568,12 @@ int main(int argc, char **argv)
     else
     {
         maxIterIls = n;
-    }
+    } 
 
     Solution s = ILS(maxIter, maxIterIls, data);
-    cout << "Custo: " << s.custo << endl; 
+    cout << "Solução ILS: " << endl;
+    showSolution(s);
+    cout << "Custo: " << s.custo << endl;
 
     return 0;
 }
