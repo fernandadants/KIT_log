@@ -480,34 +480,16 @@ Solution perturbacao(Solution &s, Data &d)
     // Se o melhor delta for menor que 0, aderir à troca.
     if (delta < 0)
     {   
+        double custo_ant = s.custo;
         s.custo = s.custo + delta;
 
         vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
-        vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
-
-        /* if (s.custo != custoSolucao2(s, d)){
-            cout << "Erro na perturbação! Sequencias escolhidas:" << endl;
-            showSequence(sub_seq1);
-            showSequence(sub_seq2);
-            cout << "Custo: " << s.custo << endl;
-            cout << "Custo Calculado: " << custoSolucao2(s, d) << endl;
-        }
-        showSolution(s); */
+        vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2); 
 
         s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
         s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
         s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
-
-        if (i2 > i1)
-        {
-            s.sequencia.insert(s.sequencia.begin() + j2 + i2 - i1, sub_seq1.begin(), sub_seq1.end());
-        }
-        else
-        {
-            s.sequencia.insert(s.sequencia.begin() + j2 + i1 - i2, sub_seq1.begin(), sub_seq1.end());
-        }
-        // s.sequencia.insert(s.sequencia.begin() + j2+i2-i1, sub_seq1.begin(), sub_seq1.end());
-        //showSequence(s.sequencia);
+        s.sequencia.insert(s.sequencia.begin() + j2+i2-i1, sub_seq1.begin(), sub_seq1.end());
         
         return s;
     }
@@ -578,15 +560,14 @@ int main(int argc, char **argv)
 
     for (int i=0; i<10;i++){
         s = ILS(maxIter, maxIterIls, data);
-        showSolution(s);
         if (s.custo < best.custo){
             best = s;
         }
     }
 
     //Solution s = ILS(maxIter, maxIterIls, data);
-    //cout << "Solução ILS: " << endl;
-    //showSolution(s);
+    cout << "Solução ILS: " << endl;
+    showSolution(s);    
     cout << "Custo: " << s.custo << endl;
     cout << "Custo Calculado: " << custoSolucao2(s, data) << endl;
 
