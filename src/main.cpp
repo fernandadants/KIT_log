@@ -4,6 +4,8 @@
 #include <random>
 #include <time.h>
 #include <algorithm>
+#include <chrono>
+#include <fstream>
 
 using namespace std;
 
@@ -34,8 +36,12 @@ void showSolution(Solution &s)
 {
     for (int i = 0; i < s.sequencia.size(); i++)
     {
-        cout << s.sequencia[i] << " ";
+        cout << s.sequencia[i];
         // cout << s.sequencia.back() << endl;
+        if (i != s.sequencia.size() - 1)
+        {
+            cout << " > ";
+        }
     }
     cout << endl;
 }
@@ -536,6 +542,13 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
 
 int main(int argc, char **argv)
 {
+    ofstream file("./output.txt", ios_base::app);
+
+    if(!file.is_open()){
+        cout << "Erro ao abrir arquivo de saída" << endl;
+    }
+
+    auto start = chrono::high_resolution_clock::now();
 
     auto data = Data(argc, argv[1]);
     data.read();
@@ -553,8 +566,8 @@ int main(int argc, char **argv)
     else
     {
         maxIterIls = n;
-    } 
-
+    }
+    
     Solution best, s;
     best.custo = INFINITY;
 
@@ -564,12 +577,22 @@ int main(int argc, char **argv)
             best = s;
         }
     }
+    
+    auto end = chrono::high_resolution_clock::now();
 
+    auto duration = chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+
+    file << data.getInstanceName() <<  ", " << duration << "ms, " << best.custo << endl;
+
+    /* cout << "Tempo de execução: " << duration << "ms\n";
+    cout << "Dimensao: " << n << endl;
     //Solution s = ILS(maxIter, maxIterIls, data);
-    cout << "Solução ILS: " << endl;
-    showSolution(s);    
+    cout << "Exemplo de Solução: " << endl;
+    showSolution(s);
     cout << "Custo: " << s.custo << endl;
-    cout << "Custo Calculado: " << custoSolucao2(s, data) << endl;
+    cout << "Custo Calculado: " << custoSolucao2(s, data) << endl; */
+
+    file.close();
 
     return 0;
 }
