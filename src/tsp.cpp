@@ -46,6 +46,7 @@ void showSolution(Solution &s)
     cout << endl;
 }
 
+// Iterando sobre uma solução
 void showSequence(vector<int> &s)
 {
     for (int i = 0; i < s.size(); i++)
@@ -55,6 +56,8 @@ void showSequence(vector<int> &s)
     cout << endl;
 }
 
+
+// calculando o custo de uma inserção
 vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &d)
 {
 
@@ -82,6 +85,8 @@ vector<InsertionInfo> calcularCustoInsercao(Solution &s, vector<int> &CL, Data &
     }
     return custoInsercao;
 }
+
+// função para escolher 3 vértices aleatórios
 void escolher3aleatorios(Solution &s, vector<int> &CL)
 {
 
@@ -108,6 +113,7 @@ void escolher3aleatorios(Solution &s, vector<int> &CL)
     s.sequencia.push_back(1);
 }
 
+// Calcula o custo de uma solução sem retornar nada
 void custoSolucao(Solution &s, Data &d)
 {
     double custo = 0;
@@ -120,6 +126,7 @@ void custoSolucao(Solution &s, Data &d)
     s.custo = custo;
 }
 
+// calcula o custo de uma solução e retorna o custo calculado
 double custoSolucao2(Solution &s, Data &d){
 
     double custo = 0;
@@ -298,6 +305,7 @@ bool two_Opt(Solution &s, Data &d)
     return false;
 }
 
+// Estruturas de vizinhança or_opt que recebe o tamanho do bloco a ser movido
 bool or_opt(Solution &s, Data &d, int bloco)
 {
 
