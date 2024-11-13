@@ -314,7 +314,7 @@ bool or_opt(Solution &s, Data &d, int bloco)
     int best_i, best_j;
 
     // Começando a iterar sob os nós da solução
-    for (int i = 1; i < s.sequencia.size() - 1; i++)
+    for (int i = 1; i < s.sequencia.size() - bloco; i++)
     {
 
         // Vértice i e a posição do ultimo no bloco
@@ -329,18 +329,23 @@ bool or_opt(Solution &s, Data &d, int bloco)
         // Bloco:        {2, 3, 4}
         // Vértices: {vi, middle, vi_aux}
 
-        for (int j = i + bloco; j < s.sequencia.size() - 2; j++)
+        for (int j = 1; j < s.sequencia.size(); j++)
         {
 
             // Inicializando cálculo da variação
             double delta = 0;
+
+            if (j == i){
+                j += bloco;
+                continue;
+            }
 
             // Posição vj e seus vizinhos
             int vj = s.sequencia[j];
             int vj_next = s.sequencia[j + 1];
             int vj_prev = s.sequencia[j - 1];
 
-            delta += -(d.getDistance(vi_prev, vi) + d.getDistance(vi_aux, vi_aux_next) + d.getDistance(vj, vj_next)) + (d.getDistance(vi_prev, vi_aux_next) + d.getDistance(vj, vi) + d.getDistance(vi_aux, vj_next));
+            delta += -(d.getDistance(vi_prev, vi) + d.getDistance(vi_aux, vi_aux_next) + d.getDistance(vj_prev, vj)) + (d.getDistance(vi_prev, vi_aux_next) + d.getDistance(vj_prev, vi) + d.getDistance(vi_aux, vj));
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
             if (delta < bestDelta)
@@ -357,19 +362,20 @@ bool or_opt(Solution &s, Data &d, int bloco)
     {
         // cout << "Best i: " << best_i << " Best j: " << best_j << "\n";
         vector<int> sub_seq = vector<int>(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
+        s.custo = s.custo + bestDelta;
 
         if (best_i > best_j)
         {
             s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
-            s.sequencia.insert(s.sequencia.begin() + best_j + 1, sub_seq.begin(), sub_seq.end());
+            s.sequencia.insert(s.sequencia.begin() + best_j, sub_seq.begin(), sub_seq.end());
         }
         else
         {
-            s.sequencia.insert(s.sequencia.begin() + best_j + 1, sub_seq.begin(), sub_seq.end());
+            s.sequencia.insert(s.sequencia.begin() + best_j, sub_seq.begin(), sub_seq.end());
             s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
         }
 
-        s.custo = s.custo + bestDelta;
+        
         return true;
     }
 
@@ -415,9 +421,8 @@ void BuscaLocal(Solution &s, Data &d)
     }
 }
 
-Solution perturbacao(Solution &s, Data &d)
+void perturbacao(Solution &s, Data &d)
 {
-    int bestdelta = 0;
     int tam = s.sequencia.size();
 
     int i1, j1, i2, j2;
@@ -433,82 +438,26 @@ Solution perturbacao(Solution &s, Data &d)
         i2 = rand() % (tam / 10) + 2;     // tamanho do bloco 2
         j2 = rand() % (tam - i2 - 2) + 2; // posição de inicio do bloco 2
 
-        // Verificar se os blocos são sobrepostos
-        for (int i = 0; i < i1; i++)
+        if (j1 > j2)
         {
-            if (s.sequencia[j1 + i] == s.sequencia[j2])
-            {
-                isOver = true;
-            }
+            swap(i1, i2);
+            swap(j1, j2);
         }
 
-        for(int i=0; i < i2; i++){
-            if (s.sequencia[j2 + i] == s.sequencia[j1])
-            {
-                isOver = true;
-            }
-        }
-
-        // Se não estão sobrepostos, sair do loop
-        if (!isOver)
-        {
+        if (j1+i1 < j2){
             break;
         }
     }
 
-    if (j1 > j2)
-    {
-        swap(i1, i2);
-        swap(j1, j2);
-    }
+    vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+    vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2); 
 
-    // Vértice i1 e suas respectivas vizinhanças
-    int vi1 = s.sequencia[j1];
-    int vi1_prev = s.sequencia[j1 - 1];
+    s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+    s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+    s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
+    s.sequencia.insert(s.sequencia.begin() + j2+i2-i1, sub_seq1.begin(), sub_seq1.end());
 
-    int vi1_aux = s.sequencia[j1 + i1 - 1];
-    int vi1_aux_next = s.sequencia[j1 + i1];
-
-    // Um exemplo de bloco de 3 elementos:
-    // Sequencia: {1, 2, 3, 4, 5, 6, 1}
-    // Bloco:        {2, 3, 4}
-    // Vértices: {vi, middle, vi_aux}
-
-    // Cálculo da variação
-    double delta = 0;
-
-    // Posição vj e seus vizinhos
-    int vi2 = s.sequencia[j2];
-    int vi2_prev = s.sequencia[j2 - 1];
-
-    int vi2_aux = s.sequencia[j2 + i2 - 1];
-    int vi2_aux_next = s.sequencia[j2 + i2];
-
-    if (vi1_aux_next == vi2)
-    {
-        delta += d.getDistance(vi1_aux, vi2) - d.getDistance(vi1_aux, vi1) - d.getDistance(vi2_aux, vi2) + d.getDistance(vi2_aux, vi1);
-    }
-
-    delta += -(d.getDistance(vi1_prev, vi1) + d.getDistance(vi1_aux, vi1_aux_next) + d.getDistance(vi2_prev, vi2) + d.getDistance(vi2_aux, vi2_aux_next)) + (d.getDistance(vi1_prev, vi2) + d.getDistance(vi2_aux, vi1_aux_next) + d.getDistance(vi2_prev, vi1) + d.getDistance(vi1_aux, vi2_aux_next));
-
-    // Se o melhor delta for menor que 0, aderir à troca.
-    if (delta < 0)
-    {   
-        double custo_ant = s.custo;
-        s.custo = s.custo + delta;
-
-        vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
-        vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2); 
-
-        s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
-        s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
-        s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
-        s.sequencia.insert(s.sequencia.begin() + j2+i2-i1, sub_seq1.begin(), sub_seq1.end());
-        
-        return s;
-    }
-
-    return s;
+    custoSolucao(s, d);
 }
 
 Solution ILS(int maxIter, int maxIterIls, Data &d)
@@ -524,8 +473,9 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
         Solution best = s;
         int iterIls = 0;
 
-        while (iterIls <= maxIterIls)
-        {
+        for (int i = 0; i < maxIter; i++){
+
+            //Realiza busca local na solução
             BuscaLocal(s, d);
 
             if (s.custo < best.custo)
@@ -534,9 +484,8 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
                 iterIls = 0;
             }
 
-            s = perturbacao(best, d);
-
-            iterIls++;
+            //Perturba a solução da busca local
+            perturbacao(s, d);
         }
 
         if (best.custo < bestOfAll.custo)
@@ -590,7 +539,7 @@ int main(int argc, char **argv)
 
     auto duration = chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
-    file << data.getInstanceName() <<  ", " << duration << "ms, " << best.custo << endl;
+    file << data.getInstanceName() <<  ", " << duration/10 << "ms, " << best.custo << endl;
 
     /* cout << "Tempo de execução: " << duration << "ms\n";
     cout << "Dimensao: " << n << endl;
