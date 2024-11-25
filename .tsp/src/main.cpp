@@ -174,7 +174,7 @@ Solution construcao(Data &data)
         sort(custoInsercao.begin(), custoInsercao.end());
 
         // escolhendo um numero aleatório
-        double alpha = rand() % 1 + 0.000001;
+        double alpha = (double) rand() / RAND_MAX;
         int indice_alpha = ceil(alpha * (custoInsercao.size()));
 
         // selecionando um vertice aleatorio no vetor, do inicio até o numero alpha
@@ -421,7 +421,7 @@ void BuscaLocal(Solution &s, Data &d)
     }
 }
 
-void perturbacao(Solution &s, Data &d)
+Solution perturbacao(Solution s, Data &d)
 {
     int tam = s.sequencia.size();
 
@@ -433,10 +433,10 @@ void perturbacao(Solution &s, Data &d)
         bool isOver = false;
 
         i1 = rand() % (tam / 10) + 2;     // tamanho do bloco 1
-        j1 = rand() % (tam - i1 - 2) + 2; // posição de inicio do bloco 1
+        j1 = rand() % (tam - i1 - 2) + 1; // posição de inicio do bloco 1
 
         i2 = rand() % (tam / 10) + 2;     // tamanho do bloco 2
-        j2 = rand() % (tam - i2 - 2) + 2; // posição de inicio do bloco 2
+        j2 = rand() % (tam - i2 - 2) + 1; // posição de inicio do bloco 2
 
         if (j1 > j2)
         {
@@ -458,6 +458,8 @@ void perturbacao(Solution &s, Data &d)
     s.sequencia.insert(s.sequencia.begin() + j2+i2-i1, sub_seq1.begin(), sub_seq1.end());
 
     custoSolucao(s, d);
+
+    return s;
 }
 
 Solution ILS(int maxIter, int maxIterIls, Data &d)
@@ -473,7 +475,7 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
         Solution best = s;
         int iterIls = 0;
 
-        for (int i = 0; i < maxIter; i++){
+        for (int i = 0; i < maxIterIls; i++){
 
             //Realiza busca local na solução
             BuscaLocal(s, d);
@@ -485,7 +487,7 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
             }
 
             //Perturba a solução da busca local
-            perturbacao(s, d);
+            s = perturbacao(best, d);
         }
 
         if (best.custo < bestOfAll.custo)
@@ -528,18 +530,18 @@ int main(int argc, char **argv)
     Solution best, s;
     best.custo = INFINITY;
 
+    double sum = 0;
+
     for (int i=0; i<10;i++){
         s = ILS(maxIter, maxIterIls, data);
-        if (s.custo < best.custo){
-            best = s;
-        }
+        sum += s.custo;
     }
     
     auto end = chrono::high_resolution_clock::now();
 
     auto duration = chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
-    file << data.getInstanceName() <<  ", " << duration/10 << "ms, " << best.custo << endl;
+    file << data.getInstanceName() <<  ", " << duration/10000.0 << "s, " << sum/10 << endl;
 
     /* cout << "Tempo de execução: " << duration << "ms\n";
     cout << "Dimensao: " << n << endl;
