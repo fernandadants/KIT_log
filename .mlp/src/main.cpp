@@ -102,6 +102,20 @@ void custoSolucao(Solution &s, Data &d)
     s.custo = custo;
 }
 
+double custoSolucao2(vector<int> sequencia, Data &d)
+{
+    double custo = 0;
+    double acumulado = 0;
+
+    for (int i = 0; i < sequencia.size() - 1; i++)
+    {
+        acumulado += d.getDistance(sequencia[i], sequencia[i + 1]);
+        custo += acumulado;
+    }
+
+    return custo;
+}
+
 void UpdateAllSubseq(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d){
     // s = solução corrente
     // subseq_matrix = vector<vector<Subsequence>>(n, vector<Subsequence>(n));
@@ -196,32 +210,42 @@ Solution construcao(Data &data)
     return s;
 }
 
-// Estrutura de vizinhança Two-Opt
-bool two_Opt(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
-{   
+bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
+{
+
+    // Definindo o melhor delta até o momento;
     int best_i, best_j;
-    int n = subseq_matrix.size();
-    bool best_delta = false;
+    double best_custo = s.custo;
+    int n = subseq_matrix.size()-1;
 
     // Começando a iterar sob os nós da solução
-    for (int i = 1; i < s.sequencia.size() - 2; ++i)
+    for (int i = 1; i < s.sequencia.size() - 1; i++)
     {
-        for (int j = i + 1; j < s.sequencia.size() - 1; ++j)
+
+        for (int j = i + 1; j < s.sequencia.size() - 1; j++)
         {
-            //cout << i << " " << j << " ";
-            //subseq_matrix[0][i-1].mostrar();
-            //subseq_matrix[j][i].mostrar();
+            
+            vector<int> seq = s.sequencia;
 
-            Subsequence sigma_1 = Subsequence:: Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][i], d);
-            Subsequence sigma_2 = Subsequence:: Concatenate(sigma_1, subseq_matrix[j+1][n-1], d);
+            Subsequence sigma_1 = Subsequence:: Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][j], d);
+            Subsequence sigma_2;
+            
+            if(i+1 != j)
+                sigma_2 = Subsequence:: Concatenate(sigma_1, subseq_matrix[i+1][j-1], d);
+            else
+                sigma_2 = sigma_1;
+            
+            Subsequence sigma_3 = Subsequence:: Concatenate(sigma_2, subseq_matrix[i][i], d);
+            Subsequence sigma_4 = Subsequence:: Concatenate(sigma_3, subseq_matrix[j+1][n], d);
 
-            //sigma_2.mostrar();
-
+            swap(seq[i], seq[j]);
+            
+            cout << sigma_4.C << " " << custoSolucao2(seq, d) << endl;
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
-            if (sigma_2.C < s.custo)
+            if (sigma_4.C < best_custo)
             {
-                best_delta = true;
+                best_custo = sigma_4.C;
                 best_i = i;
                 best_j = j;
             }
@@ -229,9 +253,46 @@ bool two_Opt(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
     }
 
     // Se o melhor delta for menor que 0, aderir à troca.
-    if (best_delta)
+    if (best_custo < s.custo)
+    {
+        swap(s.sequencia[best_i], s.sequencia[best_j]);
+        s.custo = best_custo;
+        UpdateAllSubseq(s, subseq_matrix, d);
+        return true;
+    }
+
+    return false;
+}
+
+// Estrutura de vizinhança Two-Opt
+bool two_Opt(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
+{   
+    int best_i, best_j;
+    double best_custo = s.custo;
+    int n = subseq_matrix.size()-1;
+
+    // Começando a iterar sob os nós da solução
+    for (int i = 1; i < s.sequencia.size() - 2; ++i)
+    {
+        for (int j = i + 1; j < s.sequencia.size() - 1; ++j)
+        {
+
+            Subsequence sigma_1 = Subsequence:: Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][i], d);
+            Subsequence sigma_2 = Subsequence:: Concatenate(sigma_1, subseq_matrix[j+1][n], d);
+
+            if (sigma_2.C < best_custo)
+            {
+                best_custo = sigma_2.C;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+    // Se o melhor delta for menor que 0, aderir à troca.
+    if (best_custo < s.custo)
     {
         reverse(s.sequencia.begin() + best_i, s.sequencia.begin() + best_j + 1);
+        s.custo = best_custo;
         UpdateAllSubseq(s, subseq_matrix, d);
         return true;
     }
@@ -254,8 +315,10 @@ int main(int argc, char **argv)
 
     UpdateAllSubseq(s, subseq_matrix, data);
 
-    two_Opt(s, subseq_matrix, data);
+    swap(s, subseq_matrix, data);
 
+    showSolution(s);
+    cout << s.custo << endl;
 
     return 0;
 }
