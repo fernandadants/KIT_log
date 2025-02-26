@@ -229,7 +229,7 @@ bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
 
             Subsequence sigma_1 = Subsequence:: Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][j], d);
             Subsequence sigma_2;
-            
+
             if(i+1 != j)
                 sigma_2 = Subsequence:: Concatenate(sigma_1, subseq_matrix[i+1][j-1], d);
             else
@@ -237,10 +237,6 @@ bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
             
             Subsequence sigma_3 = Subsequence:: Concatenate(sigma_2, subseq_matrix[i][i], d);
             Subsequence sigma_4 = Subsequence:: Concatenate(sigma_3, subseq_matrix[j+1][n], d);
-
-            swap(seq[i], seq[j]);
-            
-            cout << sigma_4.C << " " << custoSolucao2(seq, d) << endl;
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
             if (sigma_4.C < best_custo)
