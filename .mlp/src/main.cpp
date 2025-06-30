@@ -356,7 +356,6 @@ bool or_opt(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d, in
     // Se o melhor melhor custo for menor que o atual, aderir à troca.
     if (best_custo < s.custo)
     {
-        cout << "Best i: " << best_i << " Best j: " << best_j << "\n";
         vector<int> sub_seq = vector<int>(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
         s.custo = best_custo;
 
@@ -377,27 +376,189 @@ bool or_opt(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d, in
     return false;
 }
 
+void BuscaLocal(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
+{
+    vector<int> NL = {1, 2, 3, 4, 5};
+    bool improved = false;
+
+    while (NL.empty() == false)
+    {
+        int n = rand() % NL.size();
+
+        switch (NL[n])
+        {
+        case 1:
+            improved = swap(s, subseq_matrix, d);
+            break;
+        case 2:
+            improved = two_Opt(s, subseq_matrix, d);
+            break;
+        case 3:
+            improved = or_opt(s, subseq_matrix, d, 1);
+            break;
+        case 4:
+            improved = or_opt(s, subseq_matrix, d, 2);
+            break;
+        case 5:
+            improved = or_opt(s, subseq_matrix, d, 3);
+            break;
+        }
+
+        if (improved)
+        {
+            NL = {1, 2, 3, 4, 5};
+        }
+        else
+        {
+            NL.erase(NL.begin() + n);
+        }
+    }
+}
+
+Solution perturbacao(Solution s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
+{
+    int tam = s.sequencia.size();
+
+    int i1, j1, i2, j2; 
+
+    // Gerar duas sequencias de números não sobrepostos
+    while (true)
+    {
+        bool isOver = false;
+
+        i1 = rand() % (tam / 10) + 2;     // tamanho do bloco 1
+        j1 = rand() % (tam - i1 - 2) + 1; // posição de inicio do bloco 1
+
+        i2 = rand() % (tam / 10) + 2;     // tamanho do bloco 2
+        j2 = rand() % (tam - i2 - 2) + 1; // posição de inicio do bloco 2
+
+        if (j1 > j2)
+        {
+            swap(i1, i2);
+            swap(j1, j2);
+        }
+
+        if (j1+i1 < j2){
+            break;
+        }
+    }
+
+    vector<int> sub_seq1 = vector<int>(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+    vector<int> sub_seq2 = vector<int>(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2); 
+
+    s.sequencia.erase(s.sequencia.begin() + j2, s.sequencia.begin() + j2 + i2);
+    s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
+    s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
+    s.sequencia.insert(s.sequencia.begin() + j2+i2-i1, sub_seq1.begin(), sub_seq1.end());
+
+    custoSolucao(s, d);
+
+    return s;
+}
+
+Solution ILS(int maxIter, int maxIterIls, Data &d)
+{
+
+    Solution bestOfAll;
+    bestOfAll.custo = INFINITY;
+    unsigned int n = d.getDimension() + 1;
+
+    for (int i = 0; i < maxIter; i++)
+    {
+
+        Solution s = construcao(d);
+        vector<vector<Subsequence>> subseq_matrix(n, vector<Subsequence>(n));
+        UpdateAllSubseq(s, subseq_matrix, d);
+
+        Solution best = s;
+        int iterIls = 0;
+
+        for (int i = 0; i < maxIterIls; i++){
+
+            //Realiza busca local na solução
+            BuscaLocal(s, subseq_matrix, d);
+
+            if (s.custo < best.custo)
+            {
+                best = s;
+                iterIls = 0;
+            }
+
+            //Perturba a solução da busca local
+            s = perturbacao(best, subseq_matrix, d);
+        }
+
+        if (best.custo < bestOfAll.custo)
+        {
+            bestOfAll = best;
+        }
+    }
+
+    return bestOfAll;
+}
 
 int main(int argc, char **argv)
 {
+    ofstream file("./output.txt", ios_base::app);
+
+    if(!file.is_open()){
+        cout << "Erro ao abrir arquivo de saída" << endl;
+    }
+
+    auto start = chrono::high_resolution_clock::now();
+
     auto data = Data(argc, argv[1]);
     data.read();
+
+    unsigned int n = data.getDimension();
+
     srand(time(NULL));
 
-    int n = data.getDimension() + 1;
+    /*int n = data.getDimension() + 1;
 
     Solution s = construcao(data);
     vector<vector<Subsequence>> subseq_matrix(n, vector<Subsequence>(n));
+    UpdateAllSubseq(s, subseq_matrix, data); */
+
+    srand(time(NULL));
+
+    int maxIter = 50;
+    int maxIterIls;
+
+    if (n > 150)
+    {
+        maxIterIls = n / 2;
+    }
+    else
+    {
+        maxIterIls = n;
+    }
+    
+    Solution best, s;
+    best.custo = INFINITY;
+
+    double sum = 0;
+
+    for (int i=0; i<10;i++){
+        s = ILS(maxIter, maxIterIls, data);
+        sum += s.custo;
+    }
+    
+    auto end = chrono::high_resolution_clock::now();
+
+    auto duration = chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+
+    file << data.getInstanceName() <<  ", " << duration/10000.0 << "s, " << sum/10 << endl;
+
+    /* cout << "Tempo de execução: " << duration << "ms\n";
+    cout << "Dimensao: " << n << endl;
+    //Solution s = ILS(maxIter, maxIterIls, data);
+    cout << "Exemplo de Solução: " << endl;
     showSolution(s);
-    cout << "Custo Solucao " << s.custo << endl;
+    cout << "Custo: " << s.custo << endl;
+    cout << "Custo Calculado: " << custoSolucao2(s, data) << endl; */
 
-    UpdateAllSubseq(s, subseq_matrix, data);
-
-    cout << "Or-opt:" << endl;
-    or_opt(s, subseq_matrix, data, 2);
-
-    showSolution(s);
-    cout << s.custo << endl;
+    file.close();
 
     return 0;
 }
