@@ -296,6 +296,88 @@ bool two_Opt(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
     return false;
 }
 
+bool or_opt(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d, int bloco)
+{
+
+    // Definindo o melhor custo até o momento;
+    int best_i, best_j;
+    double best_custo = s.custo;
+    int n = subseq_matrix.size()-1;
+
+    // Começando a iterar sob os nós da solução
+    for (int i = 1; i < s.sequencia.size() - bloco; i++)
+    {
+
+        // Um exemplo de bloco de 3 elementos:
+        // Sequencia: {1, 2, 3, 4, 5, 6, 1}
+        // Bloco:        {2, 3, 4}
+        // Vértices: {vi, middle, vi_aux}
+
+        for (int j = 1; j < s.sequencia.size()-1; j++)
+        {
+            if (j == i){
+                j += bloco-1;
+                continue;
+            }
+
+            Subsequence sigma;
+
+            if(j>i){
+                Subsequence a = subseq_matrix[0][i-1];
+                Subsequence b = subseq_matrix[i+bloco][j];
+                Subsequence c = subseq_matrix[i][i+bloco-1];
+                Subsequence z = subseq_matrix[j+1][n];
+
+                sigma = Subsequence:: Concatenate(a, b, d);
+                sigma = Subsequence:: Concatenate(sigma, c, d);
+                sigma = Subsequence:: Concatenate(sigma, z, d);
+            }else{
+
+                Subsequence a = subseq_matrix[0][j-1];
+                Subsequence b = subseq_matrix[i][i+bloco-1];
+                Subsequence c = subseq_matrix[j][i-1];
+                Subsequence z = subseq_matrix[i+bloco][n];
+
+                sigma = Subsequence:: Concatenate(a, b, d);
+                sigma = Subsequence:: Concatenate(sigma, c, d);
+                sigma = Subsequence:: Concatenate(sigma, z, d);
+            }
+
+            // Se o delta calculado for melhor do que o que já existe, trocar.
+            if (sigma.C < best_custo)
+            {
+                best_custo = sigma.C;
+                best_i = i;
+                best_j = j;
+            }
+        }
+    }
+
+    // Se o melhor melhor custo for menor que o atual, aderir à troca.
+    if (best_custo < s.custo)
+    {
+        cout << "Best i: " << best_i << " Best j: " << best_j << "\n";
+        vector<int> sub_seq = vector<int>(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
+        s.custo = best_custo;
+
+        if (best_i > best_j)
+        {
+            s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
+            s.sequencia.insert(s.sequencia.begin() + best_j+1, sub_seq.begin(), sub_seq.end());
+        }
+        else
+        {
+            s.sequencia.insert(s.sequencia.begin() + best_j+1, sub_seq.begin(), sub_seq.end());
+            s.sequencia.erase(s.sequencia.begin() + best_i, s.sequencia.begin() + best_i + bloco);
+        }
+        UpdateAllSubseq(s, subseq_matrix, d);
+        return true;
+    }
+
+    return false;
+}
+
+
 int main(int argc, char **argv)
 {
     auto data = Data(argc, argv[1]);
@@ -307,11 +389,12 @@ int main(int argc, char **argv)
     Solution s = construcao(data);
     vector<vector<Subsequence>> subseq_matrix(n, vector<Subsequence>(n));
     showSolution(s);
-    cout << s.custo << endl;
+    cout << "Custo Solucao " << s.custo << endl;
 
     UpdateAllSubseq(s, subseq_matrix, data);
 
-    swap(s, subseq_matrix, data);
+    cout << "Or-opt:" << endl;
+    or_opt(s, subseq_matrix, data, 2);
 
     showSolution(s);
     cout << s.custo << endl;
