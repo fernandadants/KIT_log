@@ -181,7 +181,7 @@ Solution construcao(Data &data)
         sort(custoInsercao.begin(), custoInsercao.end());
 
         // escolhendo um numero aleatório
-        double alpha = 0.25;
+        double alpha = 0.99;
 
         int indice_alpha = ceil(alpha * (custoInsercao.size()));
 
@@ -210,7 +210,7 @@ Solution construcao(Data &data)
     return s;
 }
 
-bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
+bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &data)
 {
 
     // Definindo o melhor delta até o momento;
@@ -225,23 +225,27 @@ bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
         for (int j = i + 1; j < s.sequencia.size() - 1; j++)
         {
             
-            vector<int> seq = s.sequencia;
+            Subsequence sigma;
 
-            Subsequence sigma_1 = Subsequence:: Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][j], d);
-            Subsequence sigma_2;
+            Subsequence a = subseq_matrix[0][i-1];
+            Subsequence b = subseq_matrix[j][j];
+            Subsequence c = subseq_matrix[i+1][j-1];
+            Subsequence d = subseq_matrix[i][i];
+            Subsequence e = subseq_matrix[j+1][n];
 
-            if(i+1 != j)
-                sigma_2 = Subsequence:: Concatenate(sigma_1, subseq_matrix[i+1][j-1], d);
-            else
-                sigma_2 = sigma_1;
-            
-            Subsequence sigma_3 = Subsequence:: Concatenate(sigma_2, subseq_matrix[i][i], d);
-            Subsequence sigma_4 = Subsequence:: Concatenate(sigma_3, subseq_matrix[j+1][n], d);
+            sigma = Subsequence:: Concatenate(a, b, data);
+
+            if(i-j != 1 || j-i != 1){
+                sigma = Subsequence:: Concatenate(sigma, c, data);
+            }
+
+            sigma = Subsequence:: Concatenate(sigma, d, data);
+            sigma = Subsequence:: Concatenate(sigma, e, data);
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
-            if (sigma_4.C < best_custo)
+            if (sigma.C < best_custo)
             {
-                best_custo = sigma_4.C;
+                best_custo = sigma.C;
                 best_i = i;
                 best_j = j;
             }
@@ -253,7 +257,7 @@ bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
     {
         swap(s.sequencia[best_i], s.sequencia[best_j]);
         s.custo = best_custo;
-        UpdateAllSubseq(s, subseq_matrix, d);
+        UpdateAllSubseq(s, subseq_matrix, data);
         return true;
     }
 
@@ -450,8 +454,10 @@ Solution perturbacao(Solution s, vector<vector<Subsequence>> &subseq_matrix, Dat
     s.sequencia.erase(s.sequencia.begin() + j1, s.sequencia.begin() + j1 + i1);
     s.sequencia.insert(s.sequencia.begin() + j1, sub_seq2.begin(), sub_seq2.end());
     s.sequencia.insert(s.sequencia.begin() + j2+i2-i1, sub_seq1.begin(), sub_seq1.end());
-
+    
+    UpdateAllSubseq(s, subseq_matrix, d);
     custoSolucao(s, d);
+    
 
     return s;
 }
