@@ -528,7 +528,7 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
 
-    int maxIter = 50;
+    int maxIter = 10;
     int maxIterIls;
 
     if (n > 150)
