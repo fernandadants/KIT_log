@@ -221,7 +221,7 @@ bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &data)
     // Começando a iterar sob os nós da solução
     for (int i = 1; i < s.sequencia.size() - 1; i++)
     {
-
+        
         for (int j = i + 1; j < s.sequencia.size() - 1; j++)
         {
             
@@ -241,6 +241,13 @@ bool swap(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &data)
 
             sigma = Subsequence:: Concatenate(sigma, d, data);
             sigma = Subsequence:: Concatenate(sigma, e, data);
+
+            Solution teste = s;
+            swap(teste.sequencia[i], teste.sequencia[j]);
+            int custo_calculado = custoSolucao2(teste.sequencia, data);
+            if(custo_calculado =! sigma.C){
+                cout << "Erro: " << custo_calculado << " " << sigma.C << " i " << i << " j " << j << endl;
+            }
 
             // Se o delta calculado for melhor do que o que já existe, trocar.
             if (sigma.C < best_custo)
@@ -279,6 +286,13 @@ bool two_Opt(Solution &s, vector<vector<Subsequence>> &subseq_matrix, Data &d)
 
             Subsequence sigma_1 = Subsequence:: Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][i], d);
             Subsequence sigma_2 = Subsequence:: Concatenate(sigma_1, subseq_matrix[j+1][n], d);
+            
+            Solution teste = s;
+            reverse(teste.sequencia.begin() + i, teste.sequencia.begin() + j + 1);
+            int custo_calculado = custoSolucao2(teste.sequencia, d);
+            if(custo_calculado =! sigma_2.C){
+                cout << "Erro: " << custo_calculado << " " << sigma_2.C << " i " << i << " j " << j << endl;
+            }
 
             if (sigma_2.C < best_custo)
             {
@@ -477,9 +491,9 @@ Solution ILS(int maxIter, int maxIterIls, Data &d)
         UpdateAllSubseq(s, subseq_matrix, d);
 
         Solution best = s;
-        int iterIls = 0;
+        int iterIls;
 
-        for (int i = 0; i < maxIterIls; i++){
+        for (iterIls = 0; iterIls < maxIterIls; iterIls++){
 
             //Realiza busca local na solução
             BuscaLocal(s, subseq_matrix, d);
@@ -563,6 +577,10 @@ int main(int argc, char **argv)
     showSolution(s);
     cout << "Custo: " << s.custo << endl;
     cout << "Custo Calculado: " << custoSolucao2(s, data) << endl; */
+
+    showSolution(s);
+    cout << "Custo: " << s.custo << endl;
+    cout << "Custo Calculado: " << custoSolucao2(s.sequencia, data) << endl;
 
     file.close();
 
